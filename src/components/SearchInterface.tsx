@@ -1,15 +1,17 @@
 
 import React, { useState } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, Clock, Database } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { platforms, searchByName } from '@/services/searchService';
 import type { ProfileInfo, SearchResult } from '@/services/searchService';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface SearchInterfaceProps {
-  onSearchResults: (results: ProfileInfo[]) => void;
+  onSearchResults: (results: ProfileInfo[], searchId?: string) => void;
   onNewSearch: () => void;
 }
 
@@ -17,6 +19,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
   const [searchInput, setSearchInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleSearch = async () => {
     if (!searchInput.trim()) {
@@ -47,7 +50,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
           title: "Pesquisa concluída",
           description: `Encontrados ${results.profiles.length} perfis em diferentes plataformas.`,
         });
-        onSearchResults(results.profiles);
+        onSearchResults(results.profiles, results.searchId);
       }
     } catch (error) {
       toast({
@@ -75,16 +78,16 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8">
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold cyber-text">Investigação Digital</h2>
-        <p className="text-muted-foreground">
-          Pesquise informações públicas de pessoas em várias plataformas digitais
-        </p>
-      </div>
+    <Card className="w-full max-w-4xl mx-auto border-2 border-border shadow-lg">
+      <CardContent className="p-6 space-y-6">
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-bold text-primary">Investigação Digital</h2>
+          <p className="text-muted-foreground">
+            Pesquise informações públicas de pessoas em várias plataformas digitais
+          </p>
+        </div>
 
-      <div className="relative cyber-border rounded-lg p-6 bg-card/80">
-        <div className="flex flex-col gap-4">
+        <div className="space-y-4">
           <div className="flex flex-col md:flex-row gap-2">
             <div className="flex-1 relative">
               <Input
@@ -135,9 +138,18 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
               );
             })}
           </div>
+
+          {user && (
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-2">
+              <Database className="w-3 h-3" />
+              <span>Suas pesquisas são salvas automaticamente</span>
+              <Clock className="w-3 h-3 ml-2" />
+              <span>Acesse o histórico quando não houver resultados ativos</span>
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

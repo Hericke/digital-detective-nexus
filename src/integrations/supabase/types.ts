@@ -9,7 +9,108 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar: string | null
+          bio: string | null
+          created_at: string
+          email: string | null
+          id: string
+          location: string | null
+          name: string
+          phone: string | null
+          platform: string
+          platform_icon: string
+          url: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          phone?: string | null
+          platform: string
+          platform_icon: string
+          url?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          phone?: string | null
+          platform?: string
+          platform_icon?: string
+          url?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      search_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          search_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          search_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          search_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "search_profiles_search_id_fkey"
+            columns: ["search_id"]
+            isOneToOne: false
+            referencedRelation: "searches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      searches: {
+        Row: {
+          created_at: string
+          id: string
+          query: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          query: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          query?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
