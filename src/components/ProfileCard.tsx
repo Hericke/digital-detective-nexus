@@ -18,7 +18,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profiles }) => {
     // Convert first letter to uppercase and use the rest as is
     const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
     // Access the icon from LucideIcons object
-    const IconComponent = LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+    const IconComponent = (LucideIcons as any)[formattedIconName] || LucideIcons.Search;
     return IconComponent;
   };
 
@@ -160,11 +160,11 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profiles }) => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {consolidatedProfile.platforms.map((platform, index) => {
-                const IconComp = getIconComponent(platform.icon);
+                const IconComponent = getIconComponent(platform.icon);
                 return (
                   <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
                     <div className="flex items-center gap-2">
-                      <IconComp size={16} className="platform-icon w-4 h-4" />
+                      <IconComponent size={16} className="platform-icon w-4 h-4" />
                       <span className="text-sm">{platform.username || platform.name}</span>
                     </div>
                     {platform.url && (

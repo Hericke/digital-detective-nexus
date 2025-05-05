@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ExternalLink, MapPin, User } from 'lucide-react';
+import { ExternalLink, MapPin, User, Search } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
     // Convert first letter to uppercase and use the rest as is
     const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
     // Access the icon from LucideIcons object
-    const IconComponent = LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+    const IconComponent = (LucideIcons as any)[formattedIconName] || LucideIcons.Search;
     return IconComponent;
   };
 
@@ -57,7 +57,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {profiles.map((profile, index) => {
-                const IconComp = getIconComponent(profile.platformIcon);
+                const IconComponent = getIconComponent(profile.platformIcon);
                 return (
                   <Card key={index} className="result-card">
                     <CardHeader className="pb-2">
@@ -84,7 +84,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
                           </div>
                         </div>
                         <div>
-                          <IconComp className="platform-icon" size={18} />
+                          <IconComponent className="platform-icon" size={18} />
                         </div>
                       </div>
                     </CardHeader>

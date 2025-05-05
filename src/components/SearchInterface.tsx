@@ -70,7 +70,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
     // Convert first letter to uppercase and use the rest as is
     const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
     // Access the icon from LucideIcons object
-    const IconComponent = LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+    const IconComponent = (LucideIcons as any)[formattedIconName] || LucideIcons.Search;
     return IconComponent;
   };
 
@@ -121,14 +121,14 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {platforms.map((platform) => {
-              const IconComp = getIconComponent(platform.icon);
+              const IconComponent = getIconComponent(platform.icon);
               return (
                 <div 
                   key={platform.id}
                   className="flex items-center gap-2 bg-muted/50 p-2 rounded-md text-sm"
                 >
                   <div className="w-5 h-5 flex items-center justify-center">
-                    <IconComp size={16} className="platform-icon" />
+                    <IconComponent size={16} className="platform-icon" />
                   </div>
                   <span>{platform.name}</span>
                 </div>
