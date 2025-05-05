@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Search, Loader2 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { platforms, searchByName } from '@/services/searchService';
@@ -58,6 +59,14 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults }) =>
     }
   };
 
+  // Helper function to get icon component by name
+  const getIconComponent = (iconName: string) => {
+    // Convert first letter to uppercase and use the rest as is
+    const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
+    // Access the icon from LucideIcons object
+    return LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
       <div className="text-center space-y-2">
@@ -97,21 +106,20 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults }) =>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {platforms.map((platform) => (
-              <div 
-                key={platform.id}
-                className="flex items-center gap-2 bg-muted/50 p-2 rounded-md text-sm"
-              >
-                <div className="w-5 h-5 flex items-center justify-center">
-                  {React.createElement(
-                    // @ts-ignore - Lucide icons will be imported dynamically
-                    require(`lucide-react`)[platform.icon.charAt(0).toUpperCase() + platform.icon.slice(1)],
-                    { className: "platform-icon", size: 16 }
-                  )}
+            {platforms.map((platform) => {
+              const IconComponent = getIconComponent(platform.icon);
+              return (
+                <div 
+                  key={platform.id}
+                  className="flex items-center gap-2 bg-muted/50 p-2 rounded-md text-sm"
+                >
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <IconComponent size={16} className="platform-icon" />
+                  </div>
+                  <span>{platform.name}</span>
                 </div>
-                <span>{platform.name}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

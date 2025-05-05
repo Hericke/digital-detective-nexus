@@ -1,6 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { User, MapPin, Mail, Phone, ExternalLink, Shield } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,14 @@ interface ProfileCardProps {
 }
 
 const ProfileCard: React.FC<ProfileCardProps> = ({ profiles }) => {
+  // Helper function to get icon component by name
+  const getIconComponent = (iconName: string) => {
+    // Convert first letter to uppercase and use the rest as is
+    const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
+    // Access the icon from LucideIcons object
+    return LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+  };
+
   const consolidatedProfile = useMemo(() => {
     if (profiles.length === 0) return null;
 
@@ -134,28 +143,27 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profiles }) => {
               <span>Perfis Encontrados</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {consolidatedProfile.platforms.map((platform, index) => (
-                <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
-                  <div className="flex items-center gap-2">
-                    {React.createElement(
-                      // @ts-ignore - Lucide icons will be imported dynamically
-                      require(`lucide-react`)[platform.icon.charAt(0).toUpperCase() + platform.icon.slice(1)],
-                      { className: "platform-icon w-4 h-4" }
+              {consolidatedProfile.platforms.map((platform, index) => {
+                const IconComponent = getIconComponent(platform.icon);
+                return (
+                  <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <IconComponent className="platform-icon w-4 h-4" />
+                      <span className="text-sm">{platform.username || platform.name}</span>
+                    </div>
+                    {platform.url && (
+                      <a 
+                        href={platform.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
                     )}
-                    <span className="text-sm">{platform.username || platform.name}</span>
                   </div>
-                  {platform.url && (
-                    <a 
-                      href={platform.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-primary/80"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           
