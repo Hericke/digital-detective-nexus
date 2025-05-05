@@ -1,10 +1,11 @@
 
 import React, { useMemo } from 'react';
-import { User, MapPin, Mail, Phone, ExternalLink, Shield } from 'lucide-react';
+import { User, MapPin, Mail, Phone, ExternalLink, Shield, Search } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { ProfileInfo } from '@/services/searchService';
 
 interface ProfileCardProps {
@@ -17,7 +18,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profiles }) => {
     // Convert first letter to uppercase and use the rest as is
     const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
     // Access the icon from LucideIcons object
-    return LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+    const IconComponent = LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+    return IconComponent;
   };
 
   const consolidatedProfile = useMemo(() => {
@@ -57,6 +59,11 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profiles }) => {
 
   if (!consolidatedProfile) return null;
 
+  const handleOpenGoogleSearch = (name: string) => {
+    const searchQuery = encodeURIComponent(name);
+    window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto py-6">
       <h3 className="text-2xl font-bold mb-6 cyber-text">Perfil Consolidado</h3>
@@ -75,7 +82,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profiles }) => {
                 <User className="w-8 h-8 text-muted-foreground" />
               </div>
             )}
-            <div>
+            <div className="flex-1">
               <CardTitle className="text-2xl font-bold">
                 {consolidatedProfile.name}
               </CardTitle>
@@ -87,6 +94,15 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profiles }) => {
                 ))}
               </div>
             </div>
+            <Button
+              variant="outline" 
+              size="sm"
+              onClick={() => handleOpenGoogleSearch(consolidatedProfile.name || '')}
+              className="ml-auto"
+            >
+              Buscar no Google
+              <Search className="ml-2 w-4 h-4" />
+            </Button>
           </div>
         </CardHeader>
         
@@ -144,11 +160,11 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profiles }) => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {consolidatedProfile.platforms.map((platform, index) => {
-                const IconComponent = getIconComponent(platform.icon);
+                const IconComp = getIconComponent(platform.icon);
                 return (
                   <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
                     <div className="flex items-center gap-2">
-                      <IconComponent className="platform-icon w-4 h-4" />
+                      <IconComp size={16} className="platform-icon w-4 h-4" />
                       <span className="text-sm">{platform.username || platform.name}</span>
                     </div>
                     {platform.url && (

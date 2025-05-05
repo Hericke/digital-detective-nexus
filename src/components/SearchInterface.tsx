@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { platforms, searchByName } from '@/services/searchService';
 import type { ProfileInfo, SearchResult } from '@/services/searchService';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface SearchInterfaceProps {
   onSearchResults: (results: ProfileInfo[]) => void;
+  onNewSearch: () => void;
 }
 
-const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults }) => {
+const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNewSearch }) => {
   const [searchInput, setSearchInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
@@ -59,12 +60,18 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults }) =>
     }
   };
 
+  const handleNewSearch = () => {
+    setSearchInput('');
+    onNewSearch();
+  };
+
   // Helper function to get icon component by name
   const getIconComponent = (iconName: string) => {
     // Convert first letter to uppercase and use the rest as is
     const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
     // Access the icon from LucideIcons object
-    return LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+    const IconComponent = LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+    return IconComponent;
   };
 
   return (
@@ -103,18 +110,25 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults }) =>
                 "Pesquisar"
               )}
             </Button>
+            <Button 
+              className="h-12 px-6 bg-secondary hover:bg-secondary/90"
+              onClick={handleNewSearch}
+              disabled={isSearching}
+            >
+              Nova Pesquisa
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {platforms.map((platform) => {
-              const IconComponent = getIconComponent(platform.icon);
+              const IconComp = getIconComponent(platform.icon);
               return (
                 <div 
                   key={platform.id}
                   className="flex items-center gap-2 bg-muted/50 p-2 rounded-md text-sm"
                 >
                   <div className="w-5 h-5 flex items-center justify-center">
-                    <IconComponent size={16} className="platform-icon" />
+                    <IconComp size={16} className="platform-icon" />
                   </div>
                   <span>{platform.name}</span>
                 </div>

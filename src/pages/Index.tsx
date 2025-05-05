@@ -22,12 +22,19 @@ const Index = () => {
     }
   };
 
+  const handleNewSearch = () => {
+    setSearchResults([]);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
       <div className="flex-1 container mx-auto px-4 py-8">
-        <SearchInterface onSearchResults={handleSearchResults} />
+        <SearchInterface 
+          onSearchResults={handleSearchResults} 
+          onNewSearch={handleNewSearch} 
+        />
         
         {searchResults.length > 0 && (
           <>

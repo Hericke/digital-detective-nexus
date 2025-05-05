@@ -99,6 +99,15 @@ export const searchByName = async (name: string): Promise<SearchResult> => {
       url: "https://tiktok.com/@profile",
       platform: "TikTok",
       platformIcon: "video"
+    },
+    {
+      name: name,
+      username: `${name.toLowerCase().replace(/\s+/g, '+')}`,
+      location: "Brasil",
+      bio: "Resultados de pesquisa do Google",
+      url: `https://www.google.com/search?q=${encodeURIComponent(name)}`,
+      platform: "Google",
+      platformIcon: "search"
     }
   ];
 

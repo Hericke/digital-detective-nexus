@@ -22,7 +22,8 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
     // Convert first letter to uppercase and use the rest as is
     const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
     // Access the icon from LucideIcons object
-    return LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+    const IconComponent = LucideIcons[formattedIconName as keyof typeof LucideIcons] || LucideIcons.Search;
+    return IconComponent;
   };
 
   // Agrupar resultados por plataforma
@@ -34,6 +35,11 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
     acc[platform].push(profile);
     return acc;
   }, {});
+
+  const handleOpenGoogleSearch = (name: string) => {
+    const searchQuery = encodeURIComponent(name);
+    window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto py-8">
@@ -51,7 +57,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {profiles.map((profile, index) => {
-                const IconComponent = getIconComponent(profile.platformIcon);
+                const IconComp = getIconComponent(profile.platformIcon);
                 return (
                   <Card key={index} className="result-card">
                     <CardHeader className="pb-2">
@@ -78,7 +84,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
                           </div>
                         </div>
                         <div>
-                          <IconComponent className="platform-icon" />
+                          <IconComp className="platform-icon" size={18} />
                         </div>
                       </div>
                     </CardHeader>
@@ -109,17 +115,28 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
                       
                       <Separator className="my-2" />
                       
-                      {profile.url && (
+                      <div className="flex gap-2">
+                        {profile.url && (
+                          <Button
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => window.open(profile.url, '_blank')}
+                          >
+                            Ver Perfil
+                            <ExternalLink className="ml-2 w-3 h-3" />
+                          </Button>
+                        )}
                         <Button
-                          variant="outline" 
+                          variant="secondary" 
                           size="sm" 
-                          className="w-full"
-                          onClick={() => window.open(profile.url, '_blank')}
+                          className="flex-1"
+                          onClick={() => handleOpenGoogleSearch(profile.name || '')}
                         >
-                          Ver Perfil
-                          <ExternalLink className="ml-2 w-3 h-3" />
+                          Google
+                          <Search className="ml-2 w-3 h-3" />
                         </Button>
-                      )}
+                      </div>
                     </CardContent>
                   </Card>
                 );
