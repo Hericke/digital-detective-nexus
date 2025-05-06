@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Loader2, Clock, Database, Info, FileText, ExternalLink } from 'lucide-react';
+import { Search, Loader2, Clock, Database, Info, FileText, ExternalLink, AlertTriangle } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface SearchInterfaceProps {
   onSearchResults: (results: ProfileInfo[], searchId?: string) => void;
@@ -32,7 +33,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
     if (!searchInput.trim()) {
       toast({
         title: "Campo obrigatório",
-        description: "Por favor, insira um nome para pesquisar.",
+        description: "Por favor, insira um nome, email, telefone ou endereço para pesquisar.",
         variant: "destructive"
       });
       return;
@@ -41,6 +42,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
     setIsSearching(true);
     try {
       const results: SearchResult = await searchByName(searchInput);
+      
       if (results.error) {
         toast({
           title: "Erro na pesquisa",
@@ -50,12 +52,12 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
       } else if (results.profiles.length === 0) {
         toast({
           title: "Sem resultados",
-          description: "Nenhuma informação encontrada para este nome.",
+          description: "Nenhuma informação encontrada para este termo de busca.",
         });
       } else {
         toast({
           title: "Pesquisa concluída",
-          description: `Encontrados ${results.profiles.length} perfis em diferentes plataformas.`,
+          description: `Encontrados ${results.profiles.length} resultados.`,
         });
         onSearchResults(results.profiles, results.searchId);
       }
@@ -100,16 +102,24 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
             <h2 className="text-3xl font-bold cyber-text bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">CavernaSPY</h2>
           </div>
           <p className="text-muted-foreground">
-            Pesquise informações públicas de pessoas em mais de 40 plataformas digitais
+            Pesquise informações públicas em diversas fontes online
           </p>
         </div>
+
+        <Alert variant="warning" className="bg-yellow-500/10 border-yellow-500/30">
+          <AlertTriangle className="h-4 w-4 text-yellow-500" />
+          <AlertTitle>Modo de Demonstração</AlertTitle>
+          <AlertDescription>
+            Esta versão mostra apenas resultados de demonstração. Para uma implementação completa, é necessário integrar APIs reais de OSINT e serviços de busca.
+          </AlertDescription>
+        </Alert>
 
         <div className="space-y-4">
           <div className="flex flex-col md:flex-row gap-2">
             <div className="flex-1 relative">
               <Input
                 className="search-input h-12 pl-10 pr-4 text-lg bg-muted/70"
-                placeholder="Digite o nome da pessoa..."
+                placeholder="Digite um nome, email, telefone ou endereço..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

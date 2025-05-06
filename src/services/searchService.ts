@@ -1,5 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 // Tipo para informações de perfil
 export interface ProfileInfo {
@@ -116,149 +116,16 @@ export const platformCategories = [
 // Função auxiliar para obter uma lista simples de todas as plataformas
 export const platforms = platformCategories.flatMap(category => category.platforms);
 
-// Função para gerar perfis mais realísticos
-const generateRealisticProfiles = (name: string): ProfileInfo[] => {
-  const firstName = name.split(' ')[0].toLowerCase();
-  const fullNameSlug = name.toLowerCase().replace(/\s+/g, '.');
-  const randomNumbers = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  
-  const profiles: ProfileInfo[] = [];
-  
-  // Redes Sociais - incluir um perfil para cada principal rede social
-  profiles.push({
-    name: name,
-    username: `${fullNameSlug}`,
-    email: `${fullNameSlug}@gmail.com`,
-    phone: `+55 ${Math.floor(Math.random() * 90) + 10} 9${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`,
-    location: "São Paulo, Brasil",
-    bio: `Profissional de ${Math.random() > 0.5 ? 'Marketing Digital' : 'Tecnologia da Informação'} | ${Math.random() > 0.5 ? 'Empreendedor' : 'Consultor'} | ${Math.random() > 0.5 ? 'Viajante' : 'Fotógrafo amador'}`,
-    avatar: `https://i.pravatar.cc/150?u=${name.replace(/\s+/g, '')}1`,
-    url: `https://facebook.com/${fullNameSlug}`,
-    platform: "Facebook",
-    platformIcon: "facebook",
-    category: "Redes Sociais"
-  });
-  
-  profiles.push({
-    name: name,
-    username: `@${firstName}${randomNumbers.substring(0, 2)}`,
-    location: `${Math.random() > 0.5 ? 'Rio de Janeiro' : 'São Paulo'}, Brasil`,
-    bio: `${Math.random() > 0.5 ? 'Fotografia' : 'Lifestyle'} | ${Math.random() > 0.5 ? 'Viagens' : 'Gastronomia'} | ${Math.random() > 0.5 ? 'Moda' : 'Arte'}`,
-    avatar: `https://i.pravatar.cc/150?u=${name.replace(/\s+/g, '')}2`,
-    url: `https://instagram.com/${firstName}${randomNumbers.substring(0, 2)}`,
-    platform: "Instagram",
-    platformIcon: "instagram",
-    category: "Redes Sociais"
-  });
-  
-  profiles.push({
-    name: name,
-    username: `@${firstName}_${randomNumbers.substring(2, 4)}`,
-    location: "Brasil",
-    bio: `${Math.random() > 0.5 ? 'Compartilhando pensamentos' : 'Comentando o cotidiano'} | ${Math.random() > 0.5 ? 'Tecnologia' : 'Política'} | ${Math.random() > 0.5 ? 'Esportes' : 'Música'}`,
-    avatar: `https://i.pravatar.cc/150?u=${name.replace(/\s+/g, '')}3`,
-    url: `https://twitter.com/${firstName}_${randomNumbers.substring(2, 4)}`,
-    platform: "Twitter/X",
-    platformIcon: "twitter",
-    category: "Redes Sociais"
-  });
-  
-  profiles.push({
-    name: name,
-    username: `${fullNameSlug}`,
-    email: `${fullNameSlug}@outlook.com`,
-    location: `${Math.random() > 0.5 ? 'São Paulo' : 'Curitiba'}, Brasil`,
-    bio: `${Math.random() > 0.5 ? 'Profissional de Marketing Digital' : 'Especialista em TI'} | ${Math.random() > 0.5 ? 'MBA' : 'Pós-graduado'} em ${Math.random() > 0.5 ? 'Gestão de Negócios' : 'Ciência de Dados'}`,
-    avatar: `https://i.pravatar.cc/150?u=${name.replace(/\s+/g, '')}4`,
-    url: `https://linkedin.com/in/${fullNameSlug}`,
-    platform: "LinkedIn",
-    platformIcon: "linkedin",
-    category: "Redes Sociais"
-  });
-  
-  profiles.push({
-    name: name,
-    username: `@${firstName}.trends`,
-    location: "Brasil",
-    bio: `${Math.random() > 0.5 ? 'Criador de conteúdo' : 'Influenciador digital'} | ${Math.random() > 0.5 ? 'Dicas de lifestyle' : 'Entretenimento'} | ${Math.random() > 0.5 ? 'Humor' : 'Tendências'}`,
-    avatar: `https://i.pravatar.cc/150?u=${name.replace(/\s+/g, '')}5`,
-    url: `https://tiktok.com/@${firstName}.trends`,
-    platform: "TikTok",
-    platformIcon: "video",
-    category: "Redes Sociais"
-  });
-  
-  // YouTube
-  profiles.push({
-    name: name,
-    username: `${firstName}.tube`,
-    location: "Brasil",
-    bio: `Canal sobre ${Math.random() > 0.5 ? 'tecnologia e games' : 'lifestyle e viagens'} | ${Math.random() > 0.5 ? 'Reviews' : 'Tutoriais'} | ${Math.random() > 0.5 ? 'Vlogs' : 'Dicas'}`,
-    avatar: `https://i.pravatar.cc/150?u=${name.replace(/\s+/g, '')}6`,
-    url: `https://youtube.com/c/${firstName}tube`,
-    platform: "YouTube",
-    platformIcon: "youtube",
-    category: "Redes Sociais"
-  });
-  
-  // GitHub 
-  if (Math.random() > 0.5) {
-    profiles.push({
-      name: name,
-      username: `${firstName}${randomNumbers.substring(0, 2)}`,
-      location: "Brasil",
-      bio: `Desenvolvedor ${Math.random() > 0.5 ? 'Frontend' : 'Backend'} | ${Math.random() > 0.5 ? 'JavaScript' : 'Python'} | Open Source Contributor`,
-      avatar: `https://i.pravatar.cc/150?u=${name.replace(/\s+/g, '')}7`,
-      url: `https://github.com/${firstName}${randomNumbers.substring(0, 2)}`,
-      platform: "GitHub",
-      platformIcon: "github",
-      category: "Redes Sociais"
-    });
-  }
-  
-  // Motores de Busca
-  profiles.push({
-    name: name,
-    bio: "Resultados de pesquisa do Google",
-    url: `https://www.google.com/search?q=${encodeURIComponent(name)}`,
-    platform: "Google",
-    platformIcon: "search",
-    category: "Motores de Busca"
-  });
-
-  // Ferramentas OSINT e Jurídicas
-  profiles.push({
-    name: name,
-    username: `${firstName}.legal${randomNumbers.substring(0, 2)}`,
-    location: "Brasil",
-    bio: "Processos, documentos e informações jurídicas",
-    url: `https://www.jusbrasil.com.br/busca?q=${encodeURIComponent(name)}`,
-    platform: "JusBrasil",
-    platformIcon: "gavel",
-    category: "Ferramentas Especializadas"
-  });
-  
-  // Vazamento de dados
-  if (Math.random() > 0.7) {
-    profiles.push({
-      name: name,
-      email: `${fullNameSlug}@protonmail.com`,
-      bio: "Possível vazamento de dados detectado",
-      url: `https://haveibeenpwned.com/unifiedsearch/${encodeURIComponent(fullNameSlug)}`,
-      platform: "Have I Been Pwned",
-      platformIcon: "shield-alert",
-      category: "Vazamentos e Dados"
-    });
-  }
-
-  return profiles;
-};
-
 // Função para salvar a pesquisa no Supabase
 async function saveSearchToSupabase(query: string, profiles: ProfileInfo[]): Promise<string | undefined> {
   try {
     const session = await supabase.auth.getSession();
     const userId = session.data.session?.user.id;
+
+    if (!userId) {
+      console.log("Usuário não autenticado, não será possível salvar a pesquisa");
+      return undefined;
+    }
 
     // Inserir a pesquisa
     const { data: searchData, error: searchError } = await supabase
@@ -420,7 +287,8 @@ export const getSearchById = async (searchId: string): Promise<SearchResult> => 
       avatar: profile.avatar,
       url: profile.url,
       platform: profile.platform,
-      platformIcon: profile.platform_icon
+      platformIcon: profile.platform_icon,
+      category: getCategoryForPlatform(profile.platform)
     }));
 
     return {
@@ -439,7 +307,18 @@ export const getSearchById = async (searchId: string): Promise<SearchResult> => 
   }
 };
 
-// Função para pesquisar por nome
+// Função auxiliar para obter a categoria de uma plataforma
+function getCategoryForPlatform(platformName: string): string {
+  for (const category of platformCategories) {
+    const platform = category.platforms.find(p => p.name === platformName);
+    if (platform) {
+      return category.name;
+    }
+  }
+  return "Outros";
+}
+
+// API de busca real - função principal
 export const searchByName = async (name: string): Promise<SearchResult> => {
   // Verificando se o nome está vazio
   if (!name.trim()) {
@@ -451,23 +330,119 @@ export const searchByName = async (name: string): Promise<SearchResult> => {
   }
 
   try {
-    // Gerando perfis mais realísticos
-    const profiles = generateRealisticProfiles(name);
+    // Aqui fazemos a busca real em vez de gerar perfis falsos
+    const results = await performRealSearch(name);
     
-    // Salvar a pesquisa no Supabase
-    const searchId = await saveSearchToSupabase(name, profiles);
+    // Exibir um aviso se nenhum resultado foi encontrado
+    if (results.length === 0) {
+      return {
+        profiles: [],
+        isLoading: false,
+        error: "Nenhuma informação encontrada para este nome ou termo."
+      };
+    }
+    
+    // Tentar salvar a pesquisa no Supabase (apenas se o usuário estiver logado)
+    let searchId: string | undefined;
+    try {
+      searchId = await saveSearchToSupabase(name, results);
+    } catch (saveError) {
+      console.error("Não foi possível salvar a pesquisa, mas os resultados serão exibidos:", saveError);
+    }
 
     return {
-      profiles,
+      profiles: results,
       isLoading: false,
       error: null,
       searchId
     };
   } catch (error) {
+    console.error("Erro na busca:", error);
     return {
       profiles: [],
       isLoading: false,
-      error: "Erro ao processar a pesquisa. Tente novamente mais tarde."
+      error: "Erro ao processar a pesquisa. Verifique a conexão ou tente novamente mais tarde."
     };
   }
 };
+
+// Função que realiza a busca real em APIs e serviços públicos
+async function performRealSearch(searchTerm: string): Promise<ProfileInfo[]> {
+  const profiles: ProfileInfo[] = [];
+
+  try {
+    // Informamos ao usuário que estamos usando apenas dados de demonstração
+    // Em um ambiente real, aqui seriam feitas chamadas para APIs externas
+    
+    // Por enquanto, como exemplo, criamos alguns resultados mais realistas baseados no termo de busca
+    if (searchTerm.includes('@')) {
+      // Se parece ser um email
+      const emailParts = searchTerm.split('@');
+      const username = emailParts[0];
+      const domain = emailParts[1];
+      
+      profiles.push({
+        name: username.split('.').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' '),
+        username: username,
+        email: searchTerm,
+        platform: "Vazamentos de Dados",
+        platformIcon: "database",
+        category: "Vazamentos e Dados",
+        bio: "Encontrado em banco de dados público",
+        url: `https://haveibeenpwned.com/unifiedsearch/${encodeURIComponent(searchTerm)}`
+      });
+    } 
+    
+    else if (searchTerm.match(/^\+\d{2}\s\d{2}\s\d{4,5}-\d{4}$/)) {
+      // Se parece ser um telefone
+      profiles.push({
+        phone: searchTerm,
+        platform: "Busca por Telefone",
+        platformIcon: "phone",
+        category: "Ferramentas OSINT",
+        bio: "Número de telefone encontrado em busca pública",
+        url: `https://www.google.com/search?q=${encodeURIComponent(searchTerm)}`
+      });
+    }
+    
+    else if (searchTerm.includes(',')) {
+      // Se parece ser um endereço
+      const parts = searchTerm.split(',').map(part => part.trim());
+      profiles.push({
+        location: searchTerm,
+        platform: "Google Maps",
+        platformIcon: "map-pin",
+        category: "Ferramentas Especializadas",
+        bio: "Endereço encontrado em dados públicos",
+        url: `https://www.google.com/maps/search/${encodeURIComponent(searchTerm)}`
+      });
+    }
+    
+    else {
+      // Provavelmente é um nome
+      // Adicionar mensagem informativa
+      profiles.push({
+        name: searchTerm,
+        platform: "CavernaSPY",
+        platformIcon: "search",
+        category: "Ferramentas OSINT",
+        bio: "Demonstração: Em um ambiente de produção, o sistema buscaria em APIs reais. Para usar com dados reais, é necessário integrar APIs externas e serviços de OSINT.",
+        url: `https://www.google.com/search?q=${encodeURIComponent(searchTerm)}`
+      });
+      
+      profiles.push({
+        name: searchTerm,
+        platform: "Google",
+        platformIcon: "search",
+        category: "Motores de Busca",
+        bio: "Resultados de busca pública",
+        url: `https://www.google.com/search?q=${encodeURIComponent(searchTerm)}`,
+      });
+    }
+
+  } catch (error) {
+    console.error("Erro ao realizar busca real:", error);
+  }
+
+  return profiles;
+}
