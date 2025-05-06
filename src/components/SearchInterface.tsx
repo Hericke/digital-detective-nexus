@@ -1,14 +1,26 @@
 
 import React, { useState } from 'react';
-import { Search, Loader2, Clock, Database } from 'lucide-react';
+import { Search, Loader2, Clock, Database, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { platforms, searchByName } from '@/services/searchService';
+import { platformCategories, searchByName } from '@/services/searchService';
 import type { ProfileInfo, SearchResult } from '@/services/searchService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface SearchInterfaceProps {
   onSearchResults: (results: ProfileInfo[], searchId?: string) => void;
@@ -18,6 +30,7 @@ interface SearchInterfaceProps {
 const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNewSearch }) => {
   const [searchInput, setSearchInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>("Redes Sociais");
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -78,12 +91,12 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto border-2 border-border shadow-lg">
+    <Card className="w-full max-w-4xl mx-auto border-2 border-border shadow-lg bg-gradient-to-br from-card to-background">
       <CardContent className="p-6 space-y-6">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-primary">Investigação Digital</h2>
+          <h2 className="text-3xl font-bold cyber-text bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Investigação Digital</h2>
           <p className="text-muted-foreground">
-            Pesquise informações públicas de pessoas em várias plataformas digitais
+            Pesquise informações públicas de pessoas em mais de 40 plataformas digitais
           </p>
         </div>
 
@@ -91,7 +104,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
           <div className="flex flex-col md:flex-row gap-2">
             <div className="flex-1 relative">
               <Input
-                className="search-input h-12 pl-10 pr-4 text-lg"
+                className="search-input h-12 pl-10 pr-4 text-lg bg-muted/70"
                 placeholder="Digite o nome da pessoa..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
@@ -122,29 +135,61 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {platforms.map((platform) => {
-              const IconComponent = getIconComponent(platform.icon);
-              return (
-                <div 
-                  key={platform.id}
-                  className="flex items-center gap-2 bg-muted/50 p-2 rounded-md text-sm"
-                >
-                  <div className="w-5 h-5 flex items-center justify-center">
-                    <IconComponent size={16} className="platform-icon" />
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+            defaultValue="item-0"
+          >
+            {platformCategories.map((category, categoryIndex) => (
+              <AccordionItem key={categoryIndex} value={`item-${categoryIndex}`}>
+                <AccordionTrigger className="text-primary hover:text-primary/80">
+                  {category.name} ({category.platforms.length})
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pt-2">
+                    {category.platforms.map((platform, platformIndex) => {
+                      const IconComponent = getIconComponent(platform.icon);
+                      return (
+                        <TooltipProvider key={platformIndex}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-2 bg-muted/50 p-2 rounded-md text-sm hover:bg-muted/70 transition-colors cursor-help">
+                                <div className="w-5 h-5 flex items-center justify-center">
+                                  <IconComponent size={16} className="platform-icon text-primary" />
+                                </div>
+                                <span className="truncate">{platform.name}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                              <a href={platform.url} target="_blank" rel="noopener noreferrer" className="block hover:underline">
+                                {platform.url}
+                              </a>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      );
+                    })}
                   </div>
-                  <span>{platform.name}</span>
-                </div>
-              );
-            })}
-          </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
 
           {user && (
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-2">
-              <Database className="w-3 h-3" />
-              <span>Suas pesquisas são salvas automaticamente</span>
-              <Clock className="w-3 h-3 ml-2" />
-              <span>Acesse o histórico quando não houver resultados ativos</span>
+            <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground pt-2">
+              <div className="flex items-center gap-1">
+                <Database className="w-3 h-3" />
+                <span>Pesquisas salvas automaticamente</span>
+              </div>
+              <div className="hidden md:flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                <span>Acesse o histórico quando não houver resultados ativos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Info className="w-3 h-3" />
+                <span>Informações públicas apenas</span>
+              </div>
             </div>
           )}
         </div>

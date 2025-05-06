@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 220 20% 10%;
+    --background: 220 25% 9%;
     --foreground: 210 40% 98%;
 
     --card: 222 25% 12%;
@@ -59,31 +59,27 @@
 
 @layer components {
   .cyber-gradient {
-    background: linear-gradient(135deg, hsl(196, 80%, 45%) 0%, hsl(160, 80%, 40%) 100%);
+    @apply bg-gradient-to-br from-primary to-secondary;
   }
   
   .cyber-text {
-    background: linear-gradient(135deg, hsl(196, 80%, 65%) 0%, hsl(160, 80%, 60%) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
   }
 
   .cyber-border {
-    position: relative;
-    border: 1px solid rgba(var(--primary), 0.5);
+    @apply relative border border-primary/20;
   }
 
   .cyber-border::after {
     content: '';
-    position: absolute;
-    inset: 0;
-    border: 1px solid transparent;
-    background: linear-gradient(135deg, hsl(196, 80%, 45%) 0%, hsl(160, 80%, 40%) 100%) border-box;
-    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    @apply absolute inset-0 rounded-lg pointer-events-none;
+    background: linear-gradient(45deg, 
+      rgba(var(--primary), 0.4) 0%, 
+      rgba(var(--secondary), 0.2) 50%, 
+      rgba(var(--primary), 0.4) 100%) border-box;
     mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
-    pointer-events: none;
+    @apply opacity-50;
   }
 
   .search-input {
@@ -96,5 +92,61 @@
 
   .platform-icon {
     @apply w-5 h-5 text-primary;
+  }
+
+  .accordion-content {
+    @apply overflow-hidden transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down;
+  }
+  
+  .accordion-content[data-state='open'] {
+    animation: accordionDown 0.2s ease-out;
+  }
+
+  .accordion-content[data-state='closed'] {
+    animation: accordionUp 0.2s ease-out;
+  }
+  
+  @keyframes cyber-glow {
+    0% {
+      box-shadow: 0 0 5px rgba(var(--primary), 0.5);
+    }
+    50% {
+      box-shadow: 0 0 15px rgba(var(--primary), 0.8), 0 0 5px rgba(var(--secondary), 0.4);
+    }
+    100% {
+      box-shadow: 0 0 5px rgba(var(--primary), 0.5);
+    }
+  }
+
+  .cyber-glow {
+    animation: cyber-glow 3s ease-in-out infinite;
+  }
+}
+
+/* Estilizações para código mais limpo nos componentes */
+.platform-badge {
+  @apply inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium transition-colors;
+}
+
+.profile-link {
+  @apply flex items-center gap-1 text-primary hover:text-primary/80 hover:underline;
+}
+
+.section-title {
+  @apply text-lg font-semibold border-l-4 border-primary pl-2 mb-3;
+}
+
+.info-item {
+  @apply flex items-center gap-2 text-sm;
+}
+
+.data-list {
+  @apply space-y-1 pl-2;
+}
+
+/* Melhorias para responsividade */
+@media (max-width: 640px) {
+  .profile-grid {
+    @apply grid-cols-1;
   }
 }
