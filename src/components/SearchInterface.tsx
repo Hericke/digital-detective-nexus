@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Search, Loader2, Clock, Database, Info, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, Loader2, Clock, Database, Info, FileText, ExternalLink } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -90,7 +91,14 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
     <Card className="w-full max-w-4xl mx-auto border-2 border-border shadow-lg bg-gradient-to-br from-card to-background">
       <CardContent className="p-6 space-y-6">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold cyber-text bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Investigação Digital</h2>
+          <div className="flex items-center justify-center mb-3">
+            <img 
+              src="/lovable-uploads/8b79dcd0-43c0-4522-bcb3-fdd451d1a3d5.png"
+              alt="CavernaSPY"
+              className="h-16 w-16 mr-3"
+            />
+            <h2 className="text-3xl font-bold cyber-text bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">CavernaSPY</h2>
+          </div>
           <p className="text-muted-foreground">
             Pesquise informações públicas de pessoas em mais de 40 plataformas digitais
           </p>
@@ -129,6 +137,15 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
             >
               Nova Pesquisa
             </Button>
+          </div>
+
+          <div className="flex justify-center">
+            <Link to="/report">
+              <Button variant="outline" className="cyber-border">
+                <FileText className="mr-2 h-4 w-4" />
+                Criar Relatório de Investigação
+              </Button>
+            </Link>
           </div>
 
           <Accordion

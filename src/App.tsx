@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import SearchDetails from "./pages/SearchDetails";
 import NotFound from "./pages/NotFound";
+import ReportPage from "./pages/ReportPage";
 import { AuthProvider } from "./contexts/AuthContext";
 
 // Criar um cliente de consulta com configurações melhores para UX
@@ -30,6 +31,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/search/:id" element={<SearchDetails />} />
+            <Route path="/report" element={<ReportPage />} />
+            <Route path="/report/:id" element={<ReportPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import ProfileCard from '@/components/ProfileCard';
 import ResultsDisplay from '@/components/ResultsDisplay';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getSearchById, type ProfileInfo } from '@/services/searchService';
 
@@ -45,15 +45,29 @@ const SearchDetails = () => {
       
       <div className="flex-1 container mx-auto px-4 py-8">
         <div className="w-full max-w-4xl mx-auto">
-          <Link to="/">
-            <Button 
-              variant="ghost" 
-              className="mb-6 pl-0 hover:pl-2 transition-all duration-200"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" /> 
-              Voltar para pesquisa
-            </Button>
-          </Link>
+          <div className="flex justify-between items-center mb-6">
+            <Link to="/">
+              <Button 
+                variant="ghost" 
+                className="pl-0 hover:pl-2 transition-all duration-200"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" /> 
+                Voltar para pesquisa
+              </Button>
+            </Link>
+            
+            {!loading && !error && searchResults.length > 0 && (
+              <Link to={`/report/${id}`}>
+                <Button 
+                  variant="outline" 
+                  className="cyber-border"
+                >
+                  <FileText className="mr-2 h-4 w-4" /> 
+                  Criar Relatório
+                </Button>
+              </Link>
+            )}
+          </div>
 
           {loading ? (
             <div className="h-64 flex items-center justify-center">
@@ -89,13 +103,24 @@ const SearchDetails = () => {
           ) : (
             <>
               <div className="bg-muted/30 border border-primary/20 rounded-lg p-4 mb-6">
-                <h2 className="text-lg font-medium mb-1">Detalhes da Pesquisa</h2>
-                <p className="text-sm text-muted-foreground">
-                  Visualizando resultados para a pessoa: <span className="font-medium text-foreground">{searchResults[0]?.name}</span>
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  ID da pesquisa: {id}
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-medium mb-1">Detalhes da Pesquisa</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Visualizando resultados para a pessoa: <span className="font-medium text-foreground">{searchResults[0]?.name}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      ID da pesquisa: {id}
+                    </p>
+                  </div>
+                  <div className="hidden sm:block">
+                    <img 
+                      src="/lovable-uploads/8b79dcd0-43c0-4522-bcb3-fdd451d1a3d5.png"
+                      alt="CavernaSPY"
+                      className="h-16 w-16"
+                    />
+                  </div>
+                </div>
               </div>
               
               <ProfileCard profiles={searchResults} />
@@ -106,7 +131,7 @@ const SearchDetails = () => {
       </div>
       
       <footer className="border-t border-border py-4 text-center text-sm text-muted-foreground">
-        <p>Digital Detective Nexus &copy; {new Date().getFullYear()} - Ferramenta de investigação digital</p>
+        <p>CavernaSPY &copy; {new Date().getFullYear()} - Ferramenta de investigação digital</p>
       </footer>
     </div>
   );
