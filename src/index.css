@@ -121,6 +121,36 @@
   .cyber-glow {
     animation: cyber-glow 3s ease-in-out infinite;
   }
+
+  /* Melhorias de UX para tornar os elementos mais clicáveis */
+  .clickable-item {
+    @apply cursor-pointer hover:bg-muted/50 transition-all duration-200 rounded-md p-2;
+  }
+  
+  .platform-button {
+    @apply bg-muted/40 hover:bg-muted/70 text-foreground hover:text-primary transition-colors rounded-md p-2 flex items-center gap-2;
+  }
+  
+  .platform-card {
+    @apply border-l-2 border-transparent hover:border-primary transition-all;
+  }
+
+  /* Melhorias para leitura de conteúdo */
+  .section-header {
+    @apply text-xl font-bold mb-4 border-b border-muted pb-2;
+  }
+
+  .category-header {
+    @apply flex items-center gap-2 text-lg font-semibold;
+  }
+  
+  .tooltip-hover {
+    @apply relative group;
+  }
+  
+  .tooltip-hover::after {
+    @apply content-[''] absolute -bottom-1 left-0 w-0 h-[1px] bg-primary transition-all duration-300 group-hover:w-full;
+  }
 }
 
 /* Estilizações para código mais limpo nos componentes */
@@ -149,4 +179,30 @@
   .profile-grid {
     @apply grid-cols-1;
   }
+}
+
+/* Melhorias específicas para UI de plataformas */
+.platform-list {
+  @apply grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5;
+}
+
+.platform-item {
+  @apply flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors cursor-pointer;
+}
+
+.platform-icon-wrapper {
+  @apply flex items-center justify-center w-8 h-8 rounded-full bg-muted/50;
+}
+
+/* Destacar elementos interativos */
+.interactive {
+  @apply relative overflow-hidden;
+}
+
+.interactive::after {
+  @apply content-[''] absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 transition-opacity duration-500;
+}
+
+.interactive:hover::after {
+  @apply opacity-100;
 }

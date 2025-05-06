@@ -18,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import type { ProfileInfo } from '@/services/searchService';
 
 interface ResultsDisplayProps {
@@ -25,8 +26,6 @@ interface ResultsDisplayProps {
 }
 
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-
   if (results.length === 0) {
     return null;
   }
@@ -75,6 +74,12 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
   const handleOpenGoogleSearch = (name: string) => {
     const searchQuery = encodeURIComponent(name);
     window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+  };
+
+  const handleOpenProfileUrl = (url: string) => {
+    if (url) {
+      window.open(url, '_blank');
+    }
   };
 
   return (
@@ -158,16 +163,14 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
                                       </p>
                                     </div>
                                   </div>
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger>
-                                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/80 hover:bg-muted">
-                                          <IconComponent className="platform-icon" size={16} />
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>{platform}</TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => profile.url && window.open(profile.url, '_blank')}
+                                    className="h-7 w-7 p-0 rounded-full"
+                                  >
+                                    <IconComponent className="platform-icon" size={16} />
+                                  </Button>
                                 </div>
                               </CardHeader>
                               
@@ -203,7 +206,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
                                       variant="outline" 
                                       size="sm" 
                                       className="flex-1 font-medium border-primary/30 hover:border-primary/70"
-                                      onClick={() => window.open(profile.url, '_blank')}
+                                      onClick={() => handleOpenProfileUrl(profile.url || '')}
                                     >
                                       Ver Perfil
                                       <ExternalLink className="ml-2 w-3 h-3" />
