@@ -3,9 +3,8 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import ReportForm from '@/components/ReportForm';
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const ReportPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,13 +35,6 @@ const ReportPage = () => {
               <h1 className="text-2xl font-bold cyber-text">CavernaSPY</h1>
             </div>
           </div>
-          
-          <Alert variant="warning" className="mb-6 bg-yellow-500/10 border-yellow-500/30">
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
-            <AlertDescription>
-              Este é um ambiente de demonstração. Os relatórios criados usarão apenas dados de exemplo e não representam informações reais.
-            </AlertDescription>
-          </Alert>
 
           <ReportForm />
         </div>

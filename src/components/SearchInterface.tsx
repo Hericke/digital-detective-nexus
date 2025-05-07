@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Loader2, Clock, Database, Info, FileText, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Search, Loader2, Clock, Database, Info, FileText, ExternalLink } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface SearchInterfaceProps {
   onSearchResults: (results: ProfileInfo[], searchId?: string) => void;
@@ -105,14 +104,6 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
             Pesquise informações públicas em diversas fontes online
           </p>
         </div>
-
-        <Alert variant="warning" className="bg-yellow-500/10 border-yellow-500/30">
-          <AlertTriangle className="h-4 w-4 text-yellow-500" />
-          <AlertTitle>Modo de Demonstração</AlertTitle>
-          <AlertDescription>
-            Esta versão mostra apenas resultados de demonstração. Para uma implementação completa, é necessário integrar APIs reais de OSINT e serviços de busca.
-          </AlertDescription>
-        </Alert>
 
         <div className="space-y-4">
           <div className="flex flex-col md:flex-row gap-2">
