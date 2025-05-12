@@ -4,14 +4,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
-import { FileUp, Link, Plus, Mail, Download, Copy, Save, Trash, Eye } from 'lucide-react';
+import { FileUp, Link, Plus, Download, Copy, Save, Trash, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -44,10 +43,7 @@ interface EvidenceItem {
 
 const ReportForm = () => {
   const [evidences, setEvidences] = useState<EvidenceItem[]>([]);
-  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
-  const [recipientEmail, setRecipientEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
   const reportRef = useRef<HTMLDivElement>(null);
@@ -80,7 +76,7 @@ const ReportForm = () => {
       
       toast({
         title: "Relatório salvo com sucesso!",
-        description: "O relatório foi salvo e está pronto para download ou envio.",
+        description: "O relatório foi salvo e está pronto para download.",
       });
 
     } catch (error) {
@@ -128,38 +124,261 @@ const ReportForm = () => {
     reader.readAsDataURL(file);
   };
 
+  // Improved PDF generation with better styling and formatting
   const generatePDF = async () => {
     if (!reportRef.current) return null;
     
+    // Display loading toast
+    toast({
+      title: "Gerando PDF",
+      description: "Por favor aguarde enquanto preparamos seu relatório...",
+    });
+    
     try {
-      const canvas = await html2canvas(reportRef.current, {
+      // Create a clone of the report element for proper PDF styling
+      const reportElement = reportRef.current.cloneNode(true) as HTMLElement;
+      
+      // Apply print-specific styling to the clone
+      const reportStyles = document.createElement('style');
+      reportStyles.innerHTML = `
+        * {
+          font-family: Arial, sans-serif !important;
+          color: black !important;
+        }
+        .report-container {
+          padding: 20px;
+          background: white;
+          color: black;
+        }
+        .report-header {
+          margin-bottom: 20px;
+          border-bottom: 2px solid #eee;
+          padding-bottom: 10px;
+          text-align: center;
+        }
+        .report-title {
+          font-size: 24px;
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        .report-date {
+          font-size: 14px;
+          color: #555;
+        }
+        .section {
+          margin-bottom: 20px;
+        }
+        .section-title {
+          font-size: 18px;
+          font-weight: bold;
+          margin-bottom: 10px;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 5px;
+        }
+        .field-label {
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        .field-value {
+          margin-bottom: 15px;
+        }
+        .evidence-item {
+          border: 1px solid #ddd;
+          margin-bottom: 15px;
+          padding: 10px;
+        }
+        .evidence-image {
+          max-width: 100%;
+          max-height: 200px;
+          margin: 10px 0;
+        }
+        .evidence-desc {
+          font-style: italic;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        td, th {
+          border: 1px solid #ddd;
+          padding: 8px;
+        }
+        
+        img {
+          max-width: 100%;
+          height: auto;
+        }
+      `;
+      
+      // Create a styled container for the report
+      const container = document.createElement('div');
+      container.className = 'report-container';
+      container.innerHTML = `
+        <div class="report-header">
+          <div class="report-title">${form.getValues().reportTitle}</div>
+          <div class="report-date">Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}</div>
+        </div>
+      `;
+      
+      // Add target information section
+      const targetSection = document.createElement('div');
+      targetSection.className = 'section';
+      targetSection.innerHTML = `
+        <div class="section-title">Dados do Alvo</div>
+        <div class="field-label">Nome Completo:</div>
+        <div class="field-value">${form.getValues().targetName || 'N/A'}</div>
+        
+        <div class="field-label">Apelidos/Pseudônimos:</div>
+        <div class="field-value">${form.getValues().targetNicknames || 'N/A'}</div>
+        
+        <table>
+          <tr>
+            <td width="50%">
+              <div class="field-label">Telefone(s):</div>
+              <div class="field-value">${form.getValues().targetPhone || 'N/A'}</div>
+            </td>
+            <td width="50%">
+              <div class="field-label">E-mail(s):</div>
+              <div class="field-value">${form.getValues().targetEmail || 'N/A'}</div>
+            </td>
+          </tr>
+          <tr>
+            <td width="50%">
+              <div class="field-label">CPF/CNPJ:</div>
+              <div class="field-value">${form.getValues().targetDocument || 'N/A'}</div>
+            </td>
+            <td width="50%">
+              <div class="field-label">Endereço:</div>
+              <div class="field-value">${form.getValues().targetAddress || 'N/A'}</div>
+            </td>
+          </tr>
+        </table>
+        
+        <div class="field-label">Redes Sociais:</div>
+        <div class="field-value">${form.getValues().targetSocialMedia || 'N/A'}</div>
+      `;
+      container.appendChild(targetSection);
+      
+      // Add investigation summary section
+      const summarySection = document.createElement('div');
+      summarySection.className = 'section';
+      summarySection.innerHTML = `
+        <div class="section-title">Resumo da Investigação</div>
+        <div class="field-label">Contexto:</div>
+        <div class="field-value">${form.getValues().investigationContext || 'N/A'}</div>
+        
+        <div class="field-label">Objetivo:</div>
+        <div class="field-value">${form.getValues().investigationObjective || 'N/A'}</div>
+        
+        <div class="field-label">Período da Coleta:</div>
+        <div class="field-value">${form.getValues().investigationPeriod || 'N/A'}</div>
+      `;
+      container.appendChild(summarySection);
+      
+      // Add evidence section
+      if (evidences.length > 0) {
+        const evidenceSection = document.createElement('div');
+        evidenceSection.className = 'section';
+        evidenceSection.innerHTML = `<div class="section-title">Evidências Coletadas</div>`;
+        
+        // Create elements for each evidence
+        for (const evidence of evidences) {
+          const evidenceElement = document.createElement('div');
+          evidenceElement.className = 'evidence-item';
+          
+          let evidenceContent = '';
+          if (evidence.type === 'image' && evidence.content) {
+            evidenceContent = `
+              <div class="field-label">Imagem:</div>
+              <img src="${evidence.content}" class="evidence-image" alt="Evidência" />
+            `;
+          } else if (evidence.type === 'link' && evidence.content) {
+            evidenceContent = `
+              <div class="field-label">Link:</div>
+              <div class="field-value">${evidence.content}</div>
+            `;
+          }
+          
+          evidenceElement.innerHTML = `
+            ${evidenceContent}
+            <div class="field-label">Descrição:</div>
+            <div class="field-value evidence-desc">${evidence.description || 'Sem descrição'}</div>
+          `;
+          
+          evidenceSection.appendChild(evidenceElement);
+        }
+        
+        container.appendChild(evidenceSection);
+      }
+      
+      // Add conclusions and recommendations section
+      const conclusionsSection = document.createElement('div');
+      conclusionsSection.className = 'section';
+      conclusionsSection.innerHTML = `
+        <div class="section-title">Análise e Conclusões</div>
+        <div class="field-label">Conclusões:</div>
+        <div class="field-value">${form.getValues().conclusions || 'N/A'}</div>
+        
+        <div class="field-label">Recomendações:</div>
+        <div class="field-value">${form.getValues().recommendations || 'N/A'}</div>
+      `;
+      container.appendChild(conclusionsSection);
+      
+      // Add the footer
+      const footer = document.createElement('div');
+      footer.style.marginTop = '20px';
+      footer.style.borderTop = '1px solid #eee';
+      footer.style.paddingTop = '10px';
+      footer.style.textAlign = 'center';
+      footer.style.fontSize = '12px';
+      footer.innerHTML = `CavernaSPY &copy; ${new Date().getFullYear()} - Relatório de Investigação Digital`;
+      container.appendChild(footer);
+      
+      // Append the style and container to a temporary div
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.appendChild(reportStyles);
+      tempDiv.appendChild(container);
+      document.body.appendChild(tempDiv);
+      
+      // Convert the styled container to canvas
+      const canvas = await html2canvas(container, {
         scale: 2,
         useCORS: true,
-        logging: false
+        logging: false,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
       });
       
-      const imgData = canvas.toDataURL('image/png');
+      // Remove the temporary div
+      document.body.removeChild(tempDiv);
+      
+      // Create PDF from canvas
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'a4',
       });
       
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = canvas.height * imgWidth / canvas.width;
-      const pageHeight = 297; // A4 height in mm
-      
+      // Add canvas as image to PDF with proper sizing
       let heightLeft = imgHeight;
       let position = 0;
+      let pageCount = 1;
       
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
       
       // Add new pages if content overflows
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
+      while (heightLeft > 0) {
+        pageCount++;
+        position = -(pageHeight * pageCount - imgHeight);
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
       
@@ -201,52 +420,6 @@ const ReportForm = () => {
       });
     } finally {
       setIsDownloading(false);
-    }
-  };
-
-  const handleSendEmail = async () => {
-    if (!recipientEmail) {
-      toast({
-        title: "Email obrigatório",
-        description: "Por favor, forneça um endereço de email válido.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsSendingEmail(true);
-    
-    try {
-      const pdf = await generatePDF();
-      if (!pdf) {
-        throw new Error("Falha ao gerar o PDF");
-      }
-      
-      const formValues = form.getValues();
-      const pdfBase64 = pdf.output('datauristring');
-      
-      // Simulando o envio de email (em uma implementação real, isso seria feito via API)
-      console.log("Enviando email para:", recipientEmail);
-      console.log("Assunto:", `Relatório de Investigação: ${formValues.reportTitle}`);
-      
-      // Adicione um pequeno atraso para simular o envio
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast({
-        title: "Email enviado",
-        description: `O relatório foi enviado para ${recipientEmail}.`,
-      });
-      
-      setEmailDialogOpen(false);
-    } catch (error) {
-      console.error('Erro ao enviar email:', error);
-      toast({
-        title: "Erro no envio",
-        description: "Não foi possível enviar o relatório por email.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSendingEmail(false);
     }
   };
 
@@ -600,48 +773,7 @@ const ReportForm = () => {
                 <Save className="mr-2 h-4 w-4" />
                 {isSubmitting ? "Salvando..." : "Salvar Relatório"}
               </Button>
-              <div className="flex space-x-2">
-                <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="secondary" type="button">
-                      <Mail className="mr-2 h-4 w-4" />
-                      Enviar por Email
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Enviar Relatório por Email</DialogTitle>
-                      <DialogDescription>
-                        O relatório será enviado como anexo PDF para o endereço especificado.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                      <FormItem>
-                        <FormLabel>Email do Destinatário</FormLabel>
-                        <Input 
-                          type="email" 
-                          placeholder="cliente@exemplo.com" 
-                          value={recipientEmail} 
-                          onChange={(e) => setRecipientEmail(e.target.value)}
-                          className="search-input"
-                        />
-                      </FormItem>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="secondary" onClick={() => setEmailDialogOpen(false)}>
-                        Cancelar
-                      </Button>
-                      <Button 
-                        type="button" 
-                        onClick={handleSendEmail}
-                        disabled={isSendingEmail}
-                      >
-                        {isSendingEmail ? "Enviando..." : "Enviar"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                
+              <div>
                 <Button 
                   variant="outline" 
                   type="button" 
