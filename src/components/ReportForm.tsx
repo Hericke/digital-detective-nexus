@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -124,7 +123,7 @@ const ReportForm = () => {
     reader.readAsDataURL(file);
   };
 
-  // Improved PDF generation with better styling and formatting
+  // Improved PDF generation that properly handles multiple images
   const generatePDF = async () => {
     if (!reportRef.current) return null;
     
@@ -135,254 +134,508 @@ const ReportForm = () => {
     });
     
     try {
-      // Create a clone of the report element for proper PDF styling
-      const reportElement = reportRef.current.cloneNode(true) as HTMLElement;
+      // Create a container for the report
+      const reportContainer = document.createElement('div');
+      reportContainer.style.padding = '20px';
+      reportContainer.style.backgroundColor = 'white';
+      reportContainer.style.color = 'black';
+      reportContainer.style.fontFamily = 'Arial, sans-serif';
+      reportContainer.style.width = '210mm'; // A4 width
+      reportContainer.style.position = 'absolute';
+      reportContainer.style.left = '-9999px';
       
-      // Apply print-specific styling to the clone
-      const reportStyles = document.createElement('style');
-      reportStyles.innerHTML = `
+      // Add styles
+      const style = document.createElement('style');
+      style.textContent = `
         * {
+          box-sizing: border-box;
           font-family: Arial, sans-serif !important;
-          color: black !important;
+          color: black;
         }
         .report-container {
           padding: 20px;
           background: white;
-          color: black;
+          width: 100%;
         }
-        .report-header {
+        .report-section {
           margin-bottom: 20px;
-          border-bottom: 2px solid #eee;
-          padding-bottom: 10px;
-          text-align: center;
+          page-break-inside: avoid;
         }
         .report-title {
           font-size: 24px;
           font-weight: bold;
-          margin-bottom: 5px;
+          text-align: center;
+          margin-bottom: 10px;
         }
         .report-date {
           font-size: 14px;
-          color: #555;
-        }
-        .section {
+          text-align: center;
           margin-bottom: 20px;
+          color: #555;
         }
         .section-title {
           font-size: 18px;
           font-weight: bold;
-          margin-bottom: 10px;
-          border-bottom: 1px solid #eee;
+          border-bottom: 1px solid #ddd;
           padding-bottom: 5px;
+          margin-bottom: 10px;
+        }
+        .field-group {
+          margin-bottom: 15px;
         }
         .field-label {
           font-weight: bold;
           margin-bottom: 5px;
         }
         .field-value {
-          margin-bottom: 15px;
+          margin-bottom: 10px;
         }
         .evidence-item {
-          border: 1px solid #ddd;
-          margin-bottom: 15px;
+          border: 1px solid #eee;
           padding: 10px;
+          margin-bottom: 15px;
+          page-break-inside: avoid;
         }
         .evidence-image {
           max-width: 100%;
-          max-height: 200px;
+          height: auto;
           margin: 10px 0;
         }
-        .evidence-desc {
+        .evidence-description {
           font-style: italic;
+          margin-top: 5px;
         }
         table {
           width: 100%;
           border-collapse: collapse;
+          margin-bottom: 15px;
         }
-        td, th {
+        table td, table th {
           border: 1px solid #ddd;
           padding: 8px;
+          text-align: left;
         }
-        
-        img {
-          max-width: 100%;
-          height: auto;
+        .footer {
+          text-align: center;
+          font-size: 12px;
+          margin-top: 20px;
+          border-top: 1px solid #ddd;
+          padding-top: 10px;
         }
       `;
+      reportContainer.appendChild(style);
       
-      // Create a styled container for the report
-      const container = document.createElement('div');
-      container.className = 'report-container';
-      container.innerHTML = `
-        <div class="report-header">
-          <div class="report-title">${form.getValues().reportTitle}</div>
-          <div class="report-date">Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}</div>
-        </div>
+      // Create report header
+      const header = document.createElement('div');
+      header.innerHTML = `
+        <div class="report-title">${form.getValues().reportTitle}</div>
+        <div class="report-date">Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}</div>
       `;
+      reportContainer.appendChild(header);
       
-      // Add target information section
+      // Create target info section
       const targetSection = document.createElement('div');
-      targetSection.className = 'section';
+      targetSection.className = 'report-section';
       targetSection.innerHTML = `
         <div class="section-title">Dados do Alvo</div>
-        <div class="field-label">Nome Completo:</div>
-        <div class="field-value">${form.getValues().targetName || 'N/A'}</div>
         
-        <div class="field-label">Apelidos/Pseudônimos:</div>
-        <div class="field-value">${form.getValues().targetNicknames || 'N/A'}</div>
+        <div class="field-group">
+          <div class="field-label">Nome Completo:</div>
+          <div class="field-value">${form.getValues().targetName || 'N/A'}</div>
+        </div>
+        
+        <div class="field-group">
+          <div class="field-label">Apelidos/Pseudônimos:</div>
+          <div class="field-value">${form.getValues().targetNicknames || 'N/A'}</div>
+        </div>
         
         <table>
           <tr>
             <td width="50%">
-              <div class="field-label">Telefone(s):</div>
+              <div class="field-label">Telefone:</div>
               <div class="field-value">${form.getValues().targetPhone || 'N/A'}</div>
             </td>
             <td width="50%">
-              <div class="field-label">E-mail(s):</div>
+              <div class="field-label">E-mail:</div>
               <div class="field-value">${form.getValues().targetEmail || 'N/A'}</div>
             </td>
           </tr>
           <tr>
-            <td width="50%">
+            <td>
               <div class="field-label">CPF/CNPJ:</div>
               <div class="field-value">${form.getValues().targetDocument || 'N/A'}</div>
             </td>
-            <td width="50%">
+            <td>
               <div class="field-label">Endereço:</div>
               <div class="field-value">${form.getValues().targetAddress || 'N/A'}</div>
             </td>
           </tr>
         </table>
         
-        <div class="field-label">Redes Sociais:</div>
-        <div class="field-value">${form.getValues().targetSocialMedia || 'N/A'}</div>
+        <div class="field-group">
+          <div class="field-label">Redes Sociais:</div>
+          <div class="field-value">${form.getValues().targetSocialMedia || 'N/A'}</div>
+        </div>
       `;
-      container.appendChild(targetSection);
+      reportContainer.appendChild(targetSection);
       
-      // Add investigation summary section
+      // Create investigation summary section
       const summarySection = document.createElement('div');
-      summarySection.className = 'section';
+      summarySection.className = 'report-section';
       summarySection.innerHTML = `
         <div class="section-title">Resumo da Investigação</div>
-        <div class="field-label">Contexto:</div>
-        <div class="field-value">${form.getValues().investigationContext || 'N/A'}</div>
         
-        <div class="field-label">Objetivo:</div>
-        <div class="field-value">${form.getValues().investigationObjective || 'N/A'}</div>
+        <div class="field-group">
+          <div class="field-label">Contexto:</div>
+          <div class="field-value">${form.getValues().investigationContext || 'N/A'}</div>
+        </div>
         
-        <div class="field-label">Período da Coleta:</div>
-        <div class="field-value">${form.getValues().investigationPeriod || 'N/A'}</div>
+        <div class="field-group">
+          <div class="field-label">Objetivo:</div>
+          <div class="field-value">${form.getValues().investigationObjective || 'N/A'}</div>
+        </div>
+        
+        <div class="field-group">
+          <div class="field-label">Período da Coleta:</div>
+          <div class="field-value">${form.getValues().investigationPeriod || 'N/A'}</div>
+        </div>
       `;
-      container.appendChild(summarySection);
+      reportContainer.appendChild(summarySection);
       
-      // Add evidence section
+      // Create conclusion section
+      const conclusionSection = document.createElement('div');
+      conclusionSection.className = 'report-section';
+      conclusionSection.innerHTML = `
+        <div class="section-title">Análise e Conclusões</div>
+        
+        <div class="field-group">
+          <div class="field-label">Conclusões:</div>
+          <div class="field-value">${form.getValues().conclusions || 'N/A'}</div>
+        </div>
+        
+        <div class="field-group">
+          <div class="field-label">Recomendações:</div>
+          <div class="field-value">${form.getValues().recommendations || 'N/A'}</div>
+        </div>
+      `;
+      reportContainer.appendChild(conclusionSection);
+      
+      // Create evidence section if there are evidences
       if (evidences.length > 0) {
         const evidenceSection = document.createElement('div');
-        evidenceSection.className = 'section';
+        evidenceSection.className = 'report-section';
         evidenceSection.innerHTML = `<div class="section-title">Evidências Coletadas</div>`;
         
-        // Create elements for each evidence
-        for (const evidence of evidences) {
-          const evidenceElement = document.createElement('div');
-          evidenceElement.className = 'evidence-item';
-          
-          let evidenceContent = '';
-          if (evidence.type === 'image' && evidence.content) {
-            evidenceContent = `
-              <div class="field-label">Imagem:</div>
-              <img src="${evidence.content}" class="evidence-image" alt="Evidência" />
-            `;
-          } else if (evidence.type === 'link' && evidence.content) {
-            evidenceContent = `
-              <div class="field-label">Link:</div>
-              <div class="field-value">${evidence.content}</div>
-            `;
-          }
-          
-          evidenceElement.innerHTML = `
-            ${evidenceContent}
-            <div class="field-label">Descrição:</div>
-            <div class="field-value evidence-desc">${evidence.description || 'Sem descrição'}</div>
-          `;
-          
-          evidenceSection.appendChild(evidenceElement);
+        // Function to load images asynchronously
+        const loadImage = (src: string): Promise<HTMLImageElement> => {
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = src;
+            img.className = 'evidence-image';
+          });
+        };
+        
+        // Create a PDF
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        let isFirstPage = true;
+        let currentY = 20; // Starting Y position
+        
+        // Add report header to first page
+        pdf.setFontSize(18);
+        pdf.text(form.getValues().reportTitle, 105, currentY, { align: 'center' });
+        currentY += 10;
+        
+        pdf.setFontSize(12);
+        pdf.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 105, currentY, { align: 'center' });
+        currentY += 15;
+        
+        // Add target info
+        pdf.setFontSize(14);
+        pdf.text("Dados do Alvo", 20, currentY);
+        pdf.line(20, currentY + 2, 190, currentY + 2);
+        currentY += 10;
+        
+        pdf.setFontSize(12);
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Nome Completo:", 20, currentY);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(form.getValues().targetName || 'N/A', 60, currentY);
+        currentY += 8;
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Apelidos/Pseudônimos:", 20, currentY);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(form.getValues().targetNicknames || 'N/A', 80, currentY);
+        currentY += 8;
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Telefone:", 20, currentY);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(form.getValues().targetPhone || 'N/A', 60, currentY);
+        currentY += 8;
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text("E-mail:", 20, currentY);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(form.getValues().targetEmail || 'N/A', 60, currentY);
+        currentY += 8;
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text("CPF/CNPJ:", 20, currentY);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(form.getValues().targetDocument || 'N/A', 60, currentY);
+        currentY += 8;
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Endereço:", 20, currentY);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(form.getValues().targetAddress || 'N/A', 60, currentY);
+        currentY += 8;
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Redes Sociais:", 20, currentY);
+        pdf.setFont(undefined, 'normal');
+        
+        // Handle multi-line text for social media
+        const socialMediaText = form.getValues().targetSocialMedia || 'N/A';
+        const socialMediaLines = pdf.splitTextToSize(socialMediaText, 130);
+        pdf.text(socialMediaLines, 60, currentY);
+        currentY += (socialMediaLines.length * 7) + 5;
+        
+        // Add investigation summary
+        if (currentY > 250) { // Check if we need a new page
+          pdf.addPage();
+          currentY = 20;
         }
         
-        container.appendChild(evidenceSection);
-      }
-      
-      // Add conclusions and recommendations section
-      const conclusionsSection = document.createElement('div');
-      conclusionsSection.className = 'section';
-      conclusionsSection.innerHTML = `
-        <div class="section-title">Análise e Conclusões</div>
-        <div class="field-label">Conclusões:</div>
-        <div class="field-value">${form.getValues().conclusions || 'N/A'}</div>
+        pdf.setFontSize(14);
+        pdf.text("Resumo da Investigação", 20, currentY);
+        pdf.line(20, currentY + 2, 190, currentY + 2);
+        currentY += 10;
         
-        <div class="field-label">Recomendações:</div>
-        <div class="field-value">${form.getValues().recommendations || 'N/A'}</div>
-      `;
-      container.appendChild(conclusionsSection);
-      
-      // Add the footer
-      const footer = document.createElement('div');
-      footer.style.marginTop = '20px';
-      footer.style.borderTop = '1px solid #eee';
-      footer.style.paddingTop = '10px';
-      footer.style.textAlign = 'center';
-      footer.style.fontSize = '12px';
-      footer.innerHTML = `CavernaSPY &copy; ${new Date().getFullYear()} - Relatório de Investigação Digital`;
-      container.appendChild(footer);
-      
-      // Append the style and container to a temporary div
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.left = '-9999px';
-      tempDiv.appendChild(reportStyles);
-      tempDiv.appendChild(container);
-      document.body.appendChild(tempDiv);
-      
-      // Convert the styled container to canvas
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-        backgroundColor: '#ffffff'
-      });
-      
-      // Remove the temporary div
-      document.body.removeChild(tempDiv);
-      
-      // Create PDF from canvas
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = canvas.height * imgWidth / canvas.width;
-      
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-      
-      // Add canvas as image to PDF with proper sizing
-      let heightLeft = imgHeight;
-      let position = 0;
-      let pageCount = 1;
-      
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      
-      // Add new pages if content overflows
-      while (heightLeft > 0) {
-        pageCount++;
-        position = -(pageHeight * pageCount - imgHeight);
-        pdf.addPage();
+        pdf.setFontSize(12);
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Contexto:", 20, currentY);
+        currentY += 7;
+        pdf.setFont(undefined, 'normal');
+        const contextLines = pdf.splitTextToSize(form.getValues().investigationContext, 170);
+        pdf.text(contextLines, 20, currentY);
+        currentY += (contextLines.length * 7) + 5;
+        
+        if (currentY > 250) {
+          pdf.addPage();
+          currentY = 20;
+        }
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Objetivo:", 20, currentY);
+        currentY += 7;
+        pdf.setFont(undefined, 'normal');
+        const objectiveLines = pdf.splitTextToSize(form.getValues().investigationObjective, 170);
+        pdf.text(objectiveLines, 20, currentY);
+        currentY += (objectiveLines.length * 7) + 5;
+        
+        if (currentY > 250) {
+          pdf.addPage();
+          currentY = 20;
+        }
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Período da Coleta:", 20, currentY);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(form.getValues().investigationPeriod, 70, currentY);
+        currentY += 15;
+        
+        // Add evidences section
+        if (evidences.length > 0) {
+          if (currentY > 250) {
+            pdf.addPage();
+            currentY = 20;
+          }
+          
+          pdf.setFontSize(14);
+          pdf.text("Evidências Coletadas", 20, currentY);
+          pdf.line(20, currentY + 2, 190, currentY + 2);
+          currentY += 10;
+          
+          // Process each evidence item
+          for (let i = 0; i < evidences.length; i++) {
+            const evidence = evidences[i];
+            
+            // Check if we need a new page
+            if (currentY > 220) {
+              pdf.addPage();
+              currentY = 20;
+            }
+            
+            pdf.setFontSize(12);
+            pdf.setFont(undefined, 'bold');
+            pdf.text(`Evidência ${i+1}: ${evidence.type === 'image' ? 'Imagem' : 'Link'}`, 20, currentY);
+            currentY += 8;
+            
+            if (evidence.type === 'link') {
+              pdf.setFont(undefined, 'normal');
+              const linkLines = pdf.splitTextToSize(evidence.content, 170);
+              pdf.text(linkLines, 20, currentY);
+              currentY += (linkLines.length * 7) + 3;
+            } 
+            else if (evidence.type === 'image' && evidence.content) {
+              try {
+                // Handle image evidence
+                const imgData = evidence.content;
+                
+                // Create a temporary image to get dimensions
+                const tempImg = new Image();
+                tempImg.src = imgData;
+                
+                // Calculate image dimensions to fit on page
+                const maxWidth = 170; // max width on A4 page in mm
+                const imgWidth = Math.min(maxWidth, tempImg.width * 0.264583); // convert pixel to mm
+                const imgHeight = tempImg.height * (imgWidth / tempImg.width * 0.264583);
+                
+                // Add image to PDF, handling page breaks if needed
+                if (currentY + imgHeight > 270) {
+                  pdf.addPage();
+                  currentY = 20;
+                }
+                
+                // Add the image to the PDF
+                pdf.addImage(imgData, 'JPEG', 20, currentY, imgWidth, imgHeight);
+                currentY += imgHeight + 5;
+              } catch (error) {
+                console.error('Error adding image to PDF:', error);
+                pdf.setFont(undefined, 'italic');
+                pdf.text('[Erro ao processar imagem]', 20, currentY);
+                currentY += 7;
+              }
+            }
+            
+            // Add evidence description
+            if (evidence.description) {
+              pdf.setFont(undefined, 'bold');
+              pdf.text('Descrição:', 20, currentY);
+              currentY += 7;
+              
+              pdf.setFont(undefined, 'italic');
+              const descriptionLines = pdf.splitTextToSize(evidence.description, 170);
+              pdf.text(descriptionLines, 20, currentY);
+              currentY += (descriptionLines.length * 7) + 10;
+            } else {
+              currentY += 10;
+            }
+            
+            // Add a separator between evidences
+            if (i < evidences.length - 1) {
+              pdf.setDrawColor(200, 200, 200);
+              pdf.line(20, currentY - 5, 190, currentY - 5);
+              pdf.setDrawColor(0, 0, 0);
+            }
+          }
+        }
+        
+        // Add conclusions section
+        if (currentY > 230) {
+          pdf.addPage();
+          currentY = 20;
+        }
+        
+        pdf.setFontSize(14);
+        pdf.text("Análise e Conclusões", 20, currentY);
+        pdf.line(20, currentY + 2, 190, currentY + 2);
+        currentY += 10;
+        
+        pdf.setFontSize(12);
+        pdf.setFont(undefined, 'bold');
+        pdf.text("Conclusões:", 20, currentY);
+        currentY += 7;
+        pdf.setFont(undefined, 'normal');
+        const conclusionLines = pdf.splitTextToSize(form.getValues().conclusions, 170);
+        pdf.text(conclusionLines, 20, currentY);
+        currentY += (conclusionLines.length * 7) + 10;
+        
+        if (currentY > 250) {
+          pdf.addPage();
+          currentY = 20;
+        }
+        
+        if (form.getValues().recommendations) {
+          pdf.setFont(undefined, 'bold');
+          pdf.text("Recomendações:", 20, currentY);
+          currentY += 7;
+          pdf.setFont(undefined, 'normal');
+          const recommendationLines = pdf.splitTextToSize(form.getValues().recommendations, 170);
+          pdf.text(recommendationLines, 20, currentY);
+        }
+        
+        // Add footer to each page
+        const pageCount = pdf.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(10);
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(`CavernaSPY © ${new Date().getFullYear()} - Relatório de Investigação Digital | Página ${i} de ${pageCount}`, 105, 287, { align: 'center' });
+        }
+        
+        return pdf;
+      } else {
+        // Add footer
+        const footer = document.createElement('div');
+        footer.className = 'footer';
+        footer.innerHTML = `CavernaSPY &copy; ${new Date().getFullYear()} - Relatório de Investigação Digital`;
+        reportContainer.appendChild(footer);
+        
+        // Append the container to document body temporarily
+        document.body.appendChild(reportContainer);
+        
+        // Convert to canvas
+        const canvas = await html2canvas(reportContainer, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
+        });
+        
+        // Remove the temporary container
+        document.body.removeChild(reportContainer);
+        
+        // Create PDF
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 297; // A4 height in mm
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+        });
+        
+        // Add canvas as image to PDF
+        let heightLeft = imgHeight;
+        let position = 0;
+        let pageCount = 1;
+        
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
+        
+        // Add new pages if content overflows
+        while (heightLeft > 0) {
+          position = -(pageHeight * pageCount);
+          pdf.addPage();
+          pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+          pageCount++;
+        }
+        
+        return pdf;
       }
-      
-      return pdf;
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
       toast({
