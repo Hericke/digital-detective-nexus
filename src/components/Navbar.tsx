@@ -1,9 +1,10 @@
+
 import React, { useState } from "react";
 import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AuthForm } from "./AuthForm";
+import AuthForm from "./AuthForm";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMobile } from "@/hooks/useMobile";
+import { useMobile } from "@/hooks/use-mobile";
 
 interface NavItem {
   label: string;
@@ -20,9 +21,14 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useMobile();
+  const [showAuthForm, setShowAuthForm] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
+  };
+
+  const onLoginClick = () => {
+    setShowAuthForm(true);
   };
 
   return (
