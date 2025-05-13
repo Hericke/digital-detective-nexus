@@ -1,29 +1,45 @@
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
 import SearchDetails from "./pages/SearchDetails";
+import NotFound from "./pages/NotFound";
 import ReportPage from "./pages/ReportPage";
-import AdminPanel from "./pages/AdminPanel";
-import "./App.css";
+import { AuthProvider } from "./contexts/AuthContext";
 
-function App() {
-  return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/search/:id" element={<SearchDetails />} />
-          <Route path="/report/:id" element={<ReportPage />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+// Criar um cliente de consulta com configurações melhores para UX
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutos
+    },
+  },
+});
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <AuthProvider>
         <Toaster />
-      </BrowserRouter>
-    </AuthProvider>
-  );
-}
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/search/:id" element={<SearchDetails />} />
+            <Route path="/report" element={<ReportPage />} />
+            <Route path="/report/:id" element={<ReportPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
