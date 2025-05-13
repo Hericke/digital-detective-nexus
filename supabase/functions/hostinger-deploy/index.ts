@@ -15,7 +15,7 @@ serve(async (req) => {
 
   try {
     // Get the Hostinger API token from secrets
-    const HOSTINGER_TOKEN = Deno.env.get('HOSTINGER_TOKEN') || '8nxfWJpKcy2qtgoxvtDBYmBe0qObMgOhtceU2Isu42633cd4';
+    const HOSTINGER_TOKEN = Deno.env.get('HOSTINGER_TOKEN');
     
     if (!HOSTINGER_TOKEN) {
       throw new Error("Hostinger API token not found in environment variables");
@@ -51,24 +51,10 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
-    } else if (action === 'deploy') {
-      // This is a placeholder for actual deployment
-      // In a real scenario, you would:
-      // 1. Build the application
-      // 2. Compress it
-      // 3. Upload it to Hostinger via API or FTP
-      // 4. Configure any needed environment
-
-      // For now, just return a success message
-      return new Response(JSON.stringify({ 
-        success: true, 
-        message: "Deployment initiated. This is a simulation - in a real scenario, the app would be uploaded to Hostinger."
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
     }
     
+    // Add more actions as needed for deployment
+
     return new Response(JSON.stringify({ success: false, error: "Invalid action" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

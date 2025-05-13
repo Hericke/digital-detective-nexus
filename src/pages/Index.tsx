@@ -73,7 +73,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
+      <Navbar onLoginClick={() => setShowAuthForm(true)} />
       
       <div className="flex-1 container mx-auto px-4 py-8">
         {showAuthForm ? (
