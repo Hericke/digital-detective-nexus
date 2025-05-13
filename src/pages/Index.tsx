@@ -13,12 +13,14 @@ const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const [searchResults, setSearchResults] = useState<ProfileInfo[]>([]);
   const [searchId, setSearchId] = useState<string | undefined>(undefined);
-  const [showAuthForm, setShowAuthForm] = useState(false);
+  const [showAuthForm, setShowAuthForm] = useState(true);
   
   useEffect(() => {
-    // Esconder o formulário de autenticação se o usuário estiver logado
+    // Hide auth form if user is logged in
     if (user) {
       setShowAuthForm(false);
+    } else {
+      setShowAuthForm(true);
     }
   }, [user]);
 
@@ -76,7 +78,7 @@ const Index = () => {
       <Navbar onLoginClick={() => setShowAuthForm(true)} />
       
       <div className="flex-1 container mx-auto px-4 py-8">
-        {showAuthForm ? (
+        {showAuthForm || !user ? (
           <AuthForm onSuccess={handleAuthSuccess} />
         ) : (
           <>
@@ -100,7 +102,7 @@ const Index = () => {
       </div>
       
       <footer className="border-t border-border py-4 text-center text-sm text-muted-foreground">
-        <p>Digital Detective Nexus &copy; {new Date().getFullYear()} - Ferramenta de investigação digital</p>
+        <p>CavernaSPY &copy; {new Date().getFullYear()} - Ferramenta de investigação digital</p>
       </footer>
     </div>
   );
