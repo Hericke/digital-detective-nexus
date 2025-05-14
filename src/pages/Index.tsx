@@ -18,8 +18,10 @@ const Index = () => {
   useEffect(() => {
     // Hide auth form if user is logged in
     if (user) {
+      console.log("User is authenticated, hiding auth form");
       setShowAuthForm(false);
     } else {
+      console.log("User is not authenticated, showing auth form");
       setShowAuthForm(true);
     }
   }, [user]);
@@ -70,6 +72,7 @@ const Index = () => {
   };
 
   const handleAuthSuccess = () => {
+    console.log("Authentication successful");
     setShowAuthForm(false);
   };
 
@@ -78,7 +81,11 @@ const Index = () => {
       <Navbar onLoginClick={() => setShowAuthForm(true)} />
       
       <div className="flex-1 container mx-auto px-4 py-8">
-        {showAuthForm || !user ? (
+        {authLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : showAuthForm || !user ? (
           <AuthForm onSuccess={handleAuthSuccess} />
         ) : (
           <>

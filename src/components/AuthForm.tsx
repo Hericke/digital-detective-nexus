@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AuthFormProps {
   onSuccess: () => void;
@@ -17,25 +18,33 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const clearError = () => setError(null);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    clearError();
 
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Attempting signup with:", email);
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
 
       if (error) {
+        console.error("Signup error:", error);
+        setError(error.message);
         toast({
           title: 'Erro no cadastro',
           description: error.message,
           variant: 'destructive',
         });
       } else {
+        console.log("Signup success:", data);
         toast({
           title: 'Cadastro realizado',
           description: 'Verifique seu email para confirmar o cadastro.',
@@ -43,6 +52,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         onSuccess();
       }
     } catch (error) {
+      console.error("Unexpected signup error:", error);
+      setError('Ocorreu um erro inesperado.');
       toast({
         title: 'Erro no cadastro',
         description: 'Ocorreu um erro inesperado.',
@@ -56,20 +67,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    clearError();
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("Attempting login with:", email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.error("Login error:", error);
+        setError(error.message);
         toast({
           title: 'Erro no login',
           description: error.message,
           variant: 'destructive',
         });
       } else {
+        console.log("Login success:", data);
         toast({
           title: 'Login realizado',
           description: 'Você foi autenticado com sucesso.',
@@ -77,6 +93,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         onSuccess();
       }
     } catch (error) {
+      console.error("Unexpected login error:", error);
+      setError('Ocorreu um erro inesperado.');
       toast({
         title: 'Erro no login',
         description: 'Ocorreu um erro inesperado.',
@@ -92,7 +110,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       <Tabs defaultValue="login" className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
-            Digital Detective
+            CavernaSPY
           </CardTitle>
           <CardDescription className="text-center">
             Entre ou crie uma conta para continuar
@@ -104,6 +122,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         </CardHeader>
 
         <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <TabsContent value="login">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
