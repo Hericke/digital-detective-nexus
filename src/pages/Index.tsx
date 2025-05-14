@@ -5,6 +5,8 @@ import SearchInterface from '@/components/SearchInterface';
 import ResultsDisplay from '@/components/ResultsDisplay';
 import ProfileCard from '@/components/ProfileCard';
 import SearchHistory from '@/components/SearchHistory';
+import ProcessSearch from '@/components/ProcessSearch';
+import LocationMap from '@/components/LocationMap';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSearchById, type ProfileInfo } from '@/services/searchService';
 
@@ -80,6 +82,8 @@ const Index = () => {
               <>
                 <ProfileCard profiles={searchResults} />
                 <ResultsDisplay results={searchResults} />
+                <ProcessSearch />
+                <LocationMap profiles={searchResults} />
               </>
             )}
           </>
