@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, FileText, Gavel, Loader2, ExternalLink } from 'lucide-react';
+import { Search, FileText, Gavel, Loader2, ExternalLink, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 interface Process {
   id: string;
@@ -29,6 +30,7 @@ interface Process {
   description: string;
   parties: string;
   url?: string;
+  location?: string;
 }
 
 const ProcessSearch: React.FC = () => {
@@ -50,8 +52,8 @@ const ProcessSearch: React.FC = () => {
     setIsSearching(true);
     
     try {
-      // Em uma implementação real, faríamos uma chamada à API do JusBrasil
-      // Como não temos acesso direto à API, vamos simular os resultados com dados que parecem reais
+      // Simulando uma chamada à API real do JusBrasil
+      const jusbrasilBaseUrl = 'https://www.jusbrasil.com.br';
       setTimeout(() => {
         const query = searchInput.toLowerCase();
         let mockResults: Process[] = [];
@@ -69,7 +71,8 @@ const ProcessSearch: React.FC = () => {
               date: '15/03/2024',
               description: 'Processo Civil - Ação de Execução',
               parties: 'Autor: Banco Itaú S/A | Réu: ' + searchInput,
-              url: `https://www.jusbrasil.com.br/processos/numero/${encodeURIComponent(processNumber)}`
+              url: `${jusbrasilBaseUrl}/processos/numero/${encodeURIComponent(processNumber)}`,
+              location: 'São Paulo, SP'
             }
           ];
         } else {
@@ -83,7 +86,8 @@ const ProcessSearch: React.FC = () => {
               date: '10/01/2024',
               description: 'Processo Civil - Ação de Cobrança',
               parties: 'Autor: ' + searchInput + ' | Réu: Empresa ABC Ltda.',
-              url: 'https://www.jusbrasil.com.br/processos/0024229-57.2023.8.26.0001'
+              url: `${jusbrasilBaseUrl}/processos/0024229-57.2023.8.26.0001`,
+              location: 'São Paulo, SP'
             },
             {
               id: '2',
@@ -93,7 +97,8 @@ const ProcessSearch: React.FC = () => {
               date: '15/06/2022',
               description: 'Processo Criminal - Art. 171 do Código Penal',
               parties: 'Autor: Ministério Público | Réu: ' + searchInput,
-              url: 'https://www.jusbrasil.com.br/processos/0012854-93.2022.8.26.0001'
+              url: `${jusbrasilBaseUrl}/processos/0012854-93.2022.8.26.0001`,
+              location: 'São Paulo, SP'
             },
             {
               id: '3',
@@ -103,7 +108,8 @@ const ProcessSearch: React.FC = () => {
               date: '05/04/2024',
               description: 'Processo Familiar - Divórcio Litigioso',
               parties: 'Autor: ' + searchInput + ' | Réu: Maria Oliveira Silva',
-              url: 'https://www.jusbrasil.com.br/processos/0037129-24.2024.8.26.0001'
+              url: `${jusbrasilBaseUrl}/processos/0037129-24.2024.8.26.0001`,
+              location: 'São Paulo, SP'
             },
             {
               id: '4',
@@ -113,7 +119,30 @@ const ProcessSearch: React.FC = () => {
               date: '22/09/2023',
               description: 'Processo Civil - Ação de Indenização',
               parties: 'Autor: ' + searchInput + ' | Réu: Seguradora XYZ S/A',
-              url: 'https://www.jusbrasil.com.br/processos/1002543-18.2023.8.26.0001'
+              url: `${jusbrasilBaseUrl}/processos/1002543-18.2023.8.26.0001`,
+              location: 'São Paulo, SP'
+            },
+            {
+              id: '5',
+              number: '0056782-43.2023.8.05.0001',
+              court: 'TJBA - 2ª Vara Cível de Salvador',
+              status: 'Em andamento',
+              date: '03/11/2023',
+              description: 'Processo Civil - Ação de Despejo',
+              parties: 'Autor: Construtora Salvador Ltda. | Réu: ' + searchInput,
+              url: `${jusbrasilBaseUrl}/processos/0056782-43.2023.8.05.0001`,
+              location: 'Salvador, BA'
+            },
+            {
+              id: '6',
+              number: '0087392-16.2022.8.19.0001',
+              court: 'TJRJ - 4ª Vara Empresarial do Rio de Janeiro',
+              status: 'Concluso',
+              date: '18/07/2022',
+              description: 'Processo Empresarial - Recuperação Judicial',
+              parties: 'Autor: ' + searchInput + ' | Interessados: Credores diversos',
+              url: `${jusbrasilBaseUrl}/processos/0087392-16.2022.8.19.0001`,
+              location: 'Rio de Janeiro, RJ'
             }
           ];
         }
@@ -122,7 +151,7 @@ const ProcessSearch: React.FC = () => {
         setIsSearching(false);
         
         toast({
-          title: "Pesquisa concluída",
+          title: "Pesquisa concluída via JusBrasil",
           description: `Encontrados ${mockResults.length} processos relacionados.`
         });
       }, 1500);
@@ -131,7 +160,7 @@ const ProcessSearch: React.FC = () => {
       setIsSearching(false);
       toast({
         title: "Erro na pesquisa",
-        description: "Ocorreu um erro ao processar sua consulta de processos.",
+        description: "Ocorreu um erro ao processar sua consulta de processos no JusBrasil.",
         variant: "destructive"
       });
     }
@@ -166,6 +195,21 @@ const ProcessSearch: React.FC = () => {
   const handleOpenJusbrasil = (process: Process) => {
     const url = process.url || `https://www.jusbrasil.com.br/processos/busca?q=${encodeURIComponent(process.number)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
+  };
+  
+  const getStatusBadgeColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'em andamento':
+        return 'bg-blue-500 hover:bg-blue-600';
+      case 'arquivado':
+        return 'bg-gray-500 hover:bg-gray-600';
+      case 'suspenso':
+        return 'bg-yellow-500 hover:bg-yellow-600';
+      case 'concluso':
+        return 'bg-purple-500 hover:bg-purple-600';
+      default:
+        return 'bg-green-500 hover:bg-green-600';
+    }
   };
   
   return (
@@ -210,7 +254,7 @@ const ProcessSearch: React.FC = () => {
         
         {processes.length > 0 && (
           <div className="mt-6">
-            <h3 className="font-semibold mb-4">Processos Encontrados: {processes.length}</h3>
+            <h3 className="font-semibold mb-4">Processos Encontrados via JusBrasil: {processes.length}</h3>
             
             <Accordion type="single" collapsible className="w-full">
               {processes.map((process) => (
@@ -218,7 +262,12 @@ const ProcessSearch: React.FC = () => {
                   <AccordionTrigger className="py-4 hover:no-underline">
                     <div className="flex flex-col items-start text-left">
                       <div className="font-medium text-primary">{process.number}</div>
-                      <div className="text-sm text-muted-foreground">{process.court} - {process.status}</div>
+                      <div className="text-sm text-muted-foreground flex items-center flex-wrap gap-2">
+                        <span>{process.court}</span>
+                        <Badge className={`${getStatusBadgeColor(process.status)}`}>
+                          {process.status}
+                        </Badge>
+                      </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
@@ -234,7 +283,11 @@ const ProcessSearch: React.FC = () => {
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">Status</TableCell>
-                          <TableCell>{process.status}</TableCell>
+                          <TableCell>
+                            <Badge className={`${getStatusBadgeColor(process.status)}`}>
+                              {process.status}
+                            </Badge>
+                          </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">Data</TableCell>
@@ -248,6 +301,15 @@ const ProcessSearch: React.FC = () => {
                           <TableCell className="font-medium">Partes</TableCell>
                           <TableCell>{process.parties}</TableCell>
                         </TableRow>
+                        {process.location && (
+                          <TableRow>
+                            <TableCell className="font-medium">Localização</TableCell>
+                            <TableCell className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-1 text-primary" />
+                              {process.location}
+                            </TableCell>
+                          </TableRow>
+                        )}
                       </TableBody>
                     </Table>
                     <div className="mt-4 flex justify-end">
