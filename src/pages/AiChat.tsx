@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,15 @@ const AiChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,23 +38,32 @@ const AiChat = () => {
     setIsLoading(true);
     
     try {
-      // Call Supabase Edge Function instead of direct API URL
+      console.log("Calling Supabase edge function: ai-osint-chat");
+      
       const { data, error } = await supabase.functions.invoke('ai-osint-chat', {
         body: {
           prompt: input
         }
       });
       
+      console.log("Response received:", data, error);
+      
       if (error) {
+        console.error("Edge function error:", error);
         throw new Error(error.message || 'Erro na comunicação com a IA');
+      }
+      
+      if (!data || !data.generatedText) {
+        console.error("Invalid response format:", data);
+        throw new Error('Resposta da IA em formato inválido');
       }
       
       setMessages(prev => [...prev, { role: 'assistant', content: data.generatedText }]);
     } catch (error) {
-      console.error('Erro:', error);
+      console.error('Erro detalhado:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível obter uma resposta da IA",
+        description: "Não foi possível obter uma resposta da IA. Verifique o console para mais detalhes.",
         variant: "destructive"
       });
     } finally {
@@ -102,6 +120,7 @@ const AiChat = () => {
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
           
           <form onSubmit={handleSubmit} className="flex items-end gap-2">

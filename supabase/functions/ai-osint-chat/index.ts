@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('PERPLEXITY_API_KEY') || 'default-key';
+const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY') || '';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,12 +28,32 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt } = await req.json();
+    if (!perplexityApiKey || perplexityApiKey === '') {
+      console.error('PERPLEXITY_API_KEY is not set');
+      return new Response(JSON.stringify({ 
+        error: 'PERPLEXITY_API_KEY não está configurada no ambiente Supabase.' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const reqBody = await req.json();
+    const prompt = reqBody.prompt;
+    
+    if (!prompt) {
+      return new Response(JSON.stringify({ error: 'Prompt está vazio ou ausente' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Making request to Perplexity API with prompt:', prompt.substring(0, 50) + '...');
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${perplexityApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -47,13 +67,28 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Perplexity API error:', response.status, errorText);
+      return new Response(JSON.stringify({ 
+        error: `Erro na API da Perplexity: ${response.status}`, 
+        details: errorText 
+      }), {
+        status: response.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const data = await response.json();
+    console.log('Perplexity API response:', JSON.stringify(data).substring(0, 100) + '...');
+    
     let generatedText = '';
     
     if (data.choices && data.choices[0] && data.choices[0].message) {
       generatedText = data.choices[0].message.content;
     } else {
-      throw new Error('Resposta inesperada da API');
+      console.error('Unexpected API response format:', data);
+      throw new Error('Resposta inesperada da API da Perplexity');
     }
 
     return new Response(JSON.stringify({ generatedText }), {
