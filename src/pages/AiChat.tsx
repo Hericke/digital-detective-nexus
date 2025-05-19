@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MessageSquare, Send } from "lucide-react";
 import Navbar from '@/components/Navbar';
+import { supabase } from "@/integrations/supabase/client";
 
 type Message = {
   role: 'user' | 'assistant';
@@ -29,21 +29,17 @@ const AiChat = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/ai-osint-chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+      // Call Supabase Edge Function instead of direct API URL
+      const { data, error } = await supabase.functions.invoke('ai-osint-chat', {
+        body: {
           prompt: input
-        })
+        }
       });
       
-      if (!response.ok) {
-        throw new Error('Erro na comunicação com a IA');
+      if (error) {
+        throw new Error(error.message || 'Erro na comunicação com a IA');
       }
       
-      const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.generatedText }]);
     } catch (error) {
       console.error('Erro:', error);
