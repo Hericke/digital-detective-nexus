@@ -9,6 +9,9 @@ import ProcessSearch from '@/components/ProcessSearch';
 import LocationMap from '@/components/LocationMap';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSearchById, type ProfileInfo } from '@/services/searchService';
+import { Button } from '@/components/ui/button';
+import { MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const { loading: authLoading } = useAuth();
@@ -71,6 +74,16 @@ const Index = () => {
           </div>
         ) : (
           <>
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold cyber-text">CavernaSPY</h1>
+              <Link to="/ai-chat">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <MessageSquare className="size-4" />
+                  Assistente OSINT
+                </Button>
+              </Link>
+            </div>
+            
             <SearchInterface 
               onSearchResults={handleSearchResults} 
               onNewSearch={handleNewSearch} 

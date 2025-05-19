@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import SearchDetails from "./pages/SearchDetails";
 import NotFound from "./pages/NotFound";
 import ReportPage from "./pages/ReportPage";
+import AiChat from "./pages/AiChat";
 import { AuthProvider } from "./contexts/AuthContext";
 
 // Criar um cliente de consulta com configurações melhores para UX
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/search/:id" element={<SearchDetails />} />
             <Route path="/report" element={<ReportPage />} />
             <Route path="/report/:id" element={<ReportPage />} />
+            <Route path="/ai-chat" element={<AiChat />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
