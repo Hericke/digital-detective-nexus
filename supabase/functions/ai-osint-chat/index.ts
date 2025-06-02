@@ -41,12 +41,32 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== INÍCIO DA FUNÇÃO AI-OSINT-CHAT ===');
+    
+    // Verificar se a chave API está configurada
     if (!openaiApiKey || openaiApiKey === '') {
-      console.error('OPENAI_API_KEY is not set');
+      console.error('❌ ERRO: OPENAI_API_KEY não está configurada');
       return new Response(JSON.stringify({ 
-        error: 'OPENAI_API_KEY não está configurada no ambiente Supabase.' 
+        error: 'Chave da API OpenAI não configurada. Verifique as configurações no Supabase.' 
       }), {
         status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Log da chave (apenas os primeiros e últimos caracteres por segurança)
+    const keyPreview = openaiApiKey.length > 10 
+      ? `${openaiApiKey.substring(0, 7)}...${openaiApiKey.substring(openaiApiKey.length - 4)}`
+      : 'CHAVE_MUITO_CURTA';
+    console.log(`✅ Chave API encontrada: ${keyPreview}`);
+
+    // Verificar se a chave está no formato correto
+    if (!openaiApiKey.startsWith('sk-')) {
+      console.error('❌ ERRO: Formato da chave API inválido - deve começar com "sk-"');
+      return new Response(JSON.stringify({ 
+        error: 'Formato da chave API OpenAI inválido. A chave deve começar com "sk-".' 
+      }), {
+        status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -55,13 +75,27 @@ serve(async (req) => {
     const prompt = reqBody.prompt;
     
     if (!prompt) {
+      console.error('❌ ERRO: Prompt vazio ou ausente');
       return new Response(JSON.stringify({ error: 'Prompt está vazio ou ausente' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Making request to OpenAI API with prompt:', prompt.substring(0, 50) + '...');
+    console.log(`📝 Prompt recebido (${prompt.length} caracteres): ${prompt.substring(0, 100)}...`);
+
+    const requestBody = {
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.2,
+      max_tokens: 1000,
+    };
+
+    console.log('🚀 Enviando requisição para OpenAI API...');
+    console.log(`📊 Modelo: ${requestBody.model}, Temperature: ${requestBody.temperature}, Max tokens: ${requestBody.max_tokens}`);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -69,23 +103,40 @@ serve(async (req) => {
         'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.2,
-        max_tokens: 1000,
-      }),
+      body: JSON.stringify(requestBody),
     });
+
+    console.log(`📡 Resposta da OpenAI - Status: ${response.status} ${response.statusText}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+      console.error(`❌ ERRO DA OPENAI API (${response.status}):`, errorText);
+      
+      let errorMessage = 'Erro na comunicação com a API da OpenAI';
+      
+      // Tratamento específico para diferentes tipos de erro
+      if (response.status === 401) {
+        errorMessage = 'Chave da API OpenAI inválida ou expirada. Verifique sua chave API.';
+      } else if (response.status === 429) {
+        errorMessage = 'Limite de requisições excedido ou créditos insuficientes na conta OpenAI.';
+      } else if (response.status === 400) {
+        errorMessage = 'Requisição inválida enviada para a OpenAI. Verifique os parâmetros.';
+      } else if (response.status >= 500) {
+        errorMessage = 'Erro interno do servidor da OpenAI. Tente novamente em alguns minutos.';
+      }
+      
       return new Response(JSON.stringify({ 
-        error: `Erro na API da OpenAI: ${response.status}`, 
-        details: errorText 
+        error: errorMessage,
+        details: `Status ${response.status}: ${errorText}`,
+        troubleshooting: {
+          status: response.status,
+          possibleCauses: [
+            response.status === 401 ? 'Chave API inválida ou expirada' : null,
+            response.status === 429 ? 'Limite de requisições ou créditos insuficientes' : null,
+            response.status === 400 ? 'Parâmetros da requisição inválidos' : null,
+            response.status >= 500 ? 'Erro do servidor OpenAI' : null
+          ].filter(Boolean)
+        }
       }), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -93,23 +144,33 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('OpenAI API response:', JSON.stringify(data).substring(0, 100) + '...');
+    console.log('✅ Resposta recebida da OpenAI com sucesso');
+    console.log(`📊 Dados recebidos - Choices: ${data.choices?.length || 0}`);
     
     let generatedText = '';
     
     if (data.choices && data.choices[0] && data.choices[0].message) {
       generatedText = data.choices[0].message.content;
+      console.log(`✅ Texto gerado com sucesso (${generatedText.length} caracteres)`);
     } else {
-      console.error('Unexpected API response format:', data);
-      throw new Error('Resposta inesperada da API da OpenAI');
+      console.error('❌ ERRO: Formato de resposta inesperado da OpenAI:', JSON.stringify(data, null, 2));
+      throw new Error('Resposta inesperada da API da OpenAI - formato inválido');
     }
+
+    console.log('=== FUNÇÃO CONCLUÍDA COM SUCESSO ===');
 
     return new Response(JSON.stringify({ generatedText }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in AI OSINT chat function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('💥 ERRO CRÍTICO na função AI OSINT chat:', error);
+    console.error('Stack trace:', error.stack);
+    
+    return new Response(JSON.stringify({ 
+      error: 'Erro interno do servidor. Verifique os logs para mais detalhes.',
+      details: error.message,
+      timestamp: new Date().toISOString()
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

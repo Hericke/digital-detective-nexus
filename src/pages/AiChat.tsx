@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Send, AlertCircle, RefreshCw } from "lucide-react";
 import Navbar from '@/components/Navbar';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -38,7 +38,8 @@ const AiChat = () => {
     setIsLoading(true);
     
     try {
-      console.log("Calling Supabase edge function: ai-osint-chat");
+      console.log("🚀 Chamando função Supabase: ai-osint-chat");
+      console.log("📝 Prompt enviado:", input.substring(0, 100) + "...");
       
       const { data, error } = await supabase.functions.invoke('ai-osint-chat', {
         body: {
@@ -46,28 +47,69 @@ const AiChat = () => {
         }
       });
       
-      console.log("Response received:", data, error);
+      console.log("📡 Resposta recebida:", { data, error });
       
       if (error) {
-        console.error("Edge function error:", error);
-        throw new Error(error.message || 'Erro na comunicação com a IA');
+        console.error("❌ Erro da edge function:", error);
+        
+        let errorMessage = 'Erro na comunicação com a IA';
+        
+        if (error.message?.includes('API') || error.message?.includes('OpenAI')) {
+          errorMessage = 'Problema com a API da OpenAI. Verifique as configurações.';
+        } else if (error.message?.includes('401')) {
+          errorMessage = 'Chave da API inválida. Verifique a configuração no Supabase.';
+        } else if (error.message?.includes('429')) {
+          errorMessage = 'Limite de requisições excedido. Tente novamente em alguns minutos.';
+        }
+        
+        toast({
+          title: "Erro",
+          description: errorMessage,
+          variant: "destructive"
+        });
+        return;
       }
       
       if (!data || !data.generatedText) {
-        console.error("Invalid response format:", data);
-        throw new Error('Resposta da IA em formato inválido');
+        console.error("❌ Formato de resposta inválido:", data);
+        toast({
+          title: "Erro",
+          description: "Resposta da IA em formato inválido. Verifique os logs.",
+          variant: "destructive"
+        });
+        return;
       }
       
+      console.log("✅ Resposta processada com sucesso");
       setMessages(prev => [...prev, { role: 'assistant', content: data.generatedText }]);
+      
     } catch (error) {
-      console.error('Erro detalhado:', error);
+      console.error('💥 Erro detalhado:', error);
+      
+      let errorMessage = "Erro inesperado. Verifique o console para mais detalhes.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          errorMessage = "Erro de conectividade. Verifique sua conexão.";
+        } else if (error.message.includes('timeout')) {
+          errorMessage = "Timeout na requisição. Tente novamente.";
+        }
+      }
+      
       toast({
         title: "Erro",
-        description: "Não foi possível obter uma resposta da IA. Verifique o console para mais detalhes.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRetry = () => {
+    if (messages.length > 0 && messages[messages.length - 1].role === 'user') {
+      const lastUserMessage = messages[messages.length - 1].content;
+      setInput(lastUserMessage);
     }
   };
 
@@ -84,15 +126,33 @@ const AiChat = () => {
           <p className="text-muted-foreground">
             Converse com nossa IA especializada em OSINT para obter insights sobre suas investigações digitais.
           </p>
+          
+          {/* Indicador de status da API */}
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-muted-foreground">API OpenAI configurada</span>
+            </div>
+          </div>
         </div>
         
         <div className="flex-1 flex flex-col bg-muted/20 rounded-lg p-4 mb-4 overflow-hidden">
           <div className="flex-1 overflow-y-auto space-y-4 mb-4">
             {messages.length === 0 ? (
               <div className="h-full flex items-center justify-center">
-                <p className="text-muted-foreground text-center">
-                  Envie uma mensagem para começar a conversa com a IA especializada em OSINT.
-                </p>
+                <div className="text-center space-y-4">
+                  <p className="text-muted-foreground">
+                    Envie uma mensagem para começar a conversa com a IA especializada em OSINT.
+                  </p>
+                  <div className="text-sm text-muted-foreground">
+                    <p>Exemplos de perguntas:</p>
+                    <ul className="list-disc list-inside space-y-1 mt-2">
+                      <li>"Como investigar um perfil suspeito nas redes sociais?"</li>
+                      <li>"Quais fontes públicas posso usar para verificar informações?"</li>
+                      <li>"Como fazer busca reversa de imagem?"</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             ) : (
               messages.map((message, index) => (
@@ -112,11 +172,11 @@ const AiChat = () => {
               <div className="bg-muted border border-border rounded-lg p-3 max-w-[85%] mr-auto">
                 <div className="flex items-center gap-2">
                   <div className="animate-pulse flex space-x-1">
-                    <div className="h-2 w-2 bg-muted-foreground rounded-full"></div>
-                    <div className="h-2 w-2 bg-muted-foreground rounded-full"></div>
-                    <div className="h-2 w-2 bg-muted-foreground rounded-full"></div>
+                    <div className="h-2 w-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                    <div className="h-2 w-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="h-2 w-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
-                  <span className="text-sm text-muted-foreground">Pensando...</span>
+                  <span className="text-sm text-muted-foreground">Analisando dados...</span>
                 </div>
               </div>
             )}
@@ -139,10 +199,18 @@ const AiChat = () => {
                 }}
               />
             </div>
-            <Button type="submit" disabled={isLoading || !input.trim()} className="h-10">
-              <Send className="size-4 mr-1" />
-              Enviar
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button type="submit" disabled={isLoading || !input.trim()} className="h-10">
+                <Send className="size-4 mr-1" />
+                Enviar
+              </Button>
+              {messages.length > 0 && (
+                <Button type="button" variant="outline" size="sm" onClick={handleRetry} className="h-8">
+                  <RefreshCw className="size-3 mr-1" />
+                  Tentar novamente
+                </Button>
+              )}
+            </div>
           </form>
         </div>
       </div>
