@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY') || '';
+const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || '';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,10 +28,10 @@ serve(async (req) => {
   }
 
   try {
-    if (!perplexityApiKey || perplexityApiKey === '') {
-      console.error('PERPLEXITY_API_KEY is not set');
+    if (!openaiApiKey || openaiApiKey === '') {
+      console.error('OPENAI_API_KEY is not set');
       return new Response(JSON.stringify({ 
-        error: 'PERPLEXITY_API_KEY não está configurada no ambiente Supabase.' 
+        error: 'OPENAI_API_KEY não está configurada no ambiente Supabase.' 
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -48,16 +48,16 @@ serve(async (req) => {
       });
     }
 
-    console.log('Making request to Perplexity API with prompt:', prompt.substring(0, 50) + '...');
+    console.log('Making request to OpenAI API with prompt:', prompt.substring(0, 50) + '...');
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${perplexityApiKey}`,
+        'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online', // Modelo avançado da Perplexity
+        model: 'gpt-4o-mini', // Modelo rápido e eficiente
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
@@ -69,9 +69,9 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Perplexity API error:', response.status, errorText);
+      console.error('OpenAI API error:', response.status, errorText);
       return new Response(JSON.stringify({ 
-        error: `Erro na API da Perplexity: ${response.status}`, 
+        error: `Erro na API da OpenAI: ${response.status}`, 
         details: errorText 
       }), {
         status: response.status,
@@ -80,7 +80,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Perplexity API response:', JSON.stringify(data).substring(0, 100) + '...');
+    console.log('OpenAI API response:', JSON.stringify(data).substring(0, 100) + '...');
     
     let generatedText = '';
     
@@ -88,7 +88,7 @@ serve(async (req) => {
       generatedText = data.choices[0].message.content;
     } else {
       console.error('Unexpected API response format:', data);
-      throw new Error('Resposta inesperada da API da Perplexity');
+      throw new Error('Resposta inesperada da API da OpenAI');
     }
 
     return new Response(JSON.stringify({ generatedText }), {
