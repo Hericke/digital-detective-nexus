@@ -37,7 +37,7 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ profiles }) => 
   const [location, setLocation] = useState<LocationData | null>(null);
   const [addressInput, setAddressInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [map, setMap] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -47,8 +47,8 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ profiles }) => 
     }
   }, [profiles]);
 
-  const onLoad = useCallback((map: google.maps.Map) => {
-    setMap(map);
+  const onLoad = useCallback((mapInstance: any) => {
+    setMap(mapInstance);
   }, []);
 
   const onUnmount = useCallback(() => {
