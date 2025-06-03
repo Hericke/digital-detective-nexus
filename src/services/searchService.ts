@@ -3,6 +3,7 @@ import { toast } from "@/hooks/use-toast";
 
 // API Keys para serviços externos
 const YOUTUBE_API_KEY = "AIzaSyC_v74qHgKG_8YjKxC2ABhTWUKSkGlY-H8";
+const FACEBOOK_API_TOKEN = 'EAAavVCQscy0BO8lJphWPJsn5ZBR75p8vzBpmueBJZAicVpJgrEzxZC4SQ6y3oZBMyRZAbV6DdgR2HdKIL219uzxWSUc0ZAL5FkZCE0YentIvp8WBCa1kEGMBsXhMrZB17ffwoyFxocWmI9Au0gQIsdZAjVvVZABjDZBk98OjVDKNvuZAu20SWrwlsNIXVM2Q5EXgPPjwdvEEfp6nMs55cZC3CjGau56wk8Yi5oEHboe8ZD';
 
 // Tipo para informações de perfil
 export interface ProfileInfo {
@@ -492,7 +493,7 @@ async function searchFacebook(query: string): Promise<ProfileInfo[]> {
     // Implementação básica de pesquisa no Facebook Graph API
     // Nota: A API do Facebook é mais complexa e pode requerer permissões específicas
     const encodedQuery = encodeURIComponent(query);
-    const url = `https://graph.facebook.com/v17.0/search?q=${encodedQuery}&type=user,page&fields=id,name,username,picture,link&access_token=${FACEBOOK_META_TOKEN}`;
+    const url = `https://graph.facebook.com/v17.0/search?q=${encodedQuery}&type=user,page&fields=id,name,username,picture,link&access_token=${FACEBOOK_API_TOKEN}`;
     
     const response = await fetch(url);
     const data = await response.json();

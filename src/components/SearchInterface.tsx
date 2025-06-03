@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Loader2, Clock, Database, Info, FileText, ExternalLink } from 'lucide-react';
+import { Search, Loader2, Clock, Database, Info, FileText, ExternalLink, MapPin, Camera, Youtube } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -140,11 +140,29 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
             </Button>
           </div>
 
-          <div className="flex justify-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <Link to="/report">
-              <Button variant="outline" className="cyber-border">
+              <Button variant="outline" className="cyber-border w-full h-auto py-2">
                 <FileText className="mr-2 h-4 w-4" />
-                Criar Relatório de Investigação
+                Relatório
+              </Button>
+            </Link>
+            <Link to="/google-map">
+              <Button variant="outline" className="cyber-border w-full h-auto py-2">
+                <MapPin className="mr-2 h-4 w-4" />
+                Mapa Google
+              </Button>
+            </Link>
+            <Link to="/image-analysis">
+              <Button variant="outline" className="cyber-border w-full h-auto py-2">
+                <Camera className="mr-2 h-4 w-4" />
+                Análise Imagem
+              </Button>
+            </Link>
+            <Link to="/youtube-search">
+              <Button variant="outline" className="cyber-border w-full h-auto py-2">
+                <Youtube className="mr-2 h-4 w-4" />
+                YouTube OSINT
               </Button>
             </Link>
           </div>
