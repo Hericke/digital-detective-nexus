@@ -3,6 +3,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || '';
+const hunterApiKey = '3c7e7e1618c69e65f2f41cd0e7b9bc7c72218977';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,6 +17,7 @@ SUAS FUNÇÕES:
 2. Sugerir hipóteses investigativas baseadas nos dados
 3. Recomendar fontes de dados públicos relevantes
 4. Orientar sobre técnicas de OSINT
+5. Realizar buscas de emails usando Hunter.ai quando solicitado
 
 REGRAS ABSOLUTAS:
 ❌ NUNCA invente dados ou informações
@@ -33,6 +35,28 @@ COMPORTAMENTO:
 - Respeite questões legais e éticas da investigação digital
 
 Se não tiver dados suficientes, peça mais informações ao usuário.`;
+
+// Função para buscar emails no Hunter.ai
+async function searchEmailsHunter(domain: string) {
+  try {
+    console.log(`🔍 Buscando emails para domínio: ${domain}`);
+    
+    const response = await fetch(`https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${hunterApiKey}`);
+    
+    if (!response.ok) {
+      console.error(`❌ Erro na API Hunter.ai: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    console.log(`✅ Resposta do Hunter.ai recebida`);
+    
+    return data;
+  } catch (error) {
+    console.error('❌ Erro ao buscar emails no Hunter.ai:', error);
+    return null;
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -60,17 +84,6 @@ serve(async (req) => {
       : 'CHAVE_MUITO_CURTA';
     console.log(`✅ Chave API encontrada: ${keyPreview}`);
 
-    // Verificar se a chave está no formato correto
-    if (!openaiApiKey.startsWith('sk-')) {
-      console.error('❌ ERRO: Formato da chave API inválido - deve começar com "sk-"');
-      return new Response(JSON.stringify({ 
-        error: 'Formato da chave API OpenAI inválido. A chave deve começar com "sk-".' 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const reqBody = await req.json();
     const prompt = reqBody.prompt;
     
@@ -84,14 +97,49 @@ serve(async (req) => {
 
     console.log(`📝 Prompt recebido (${prompt.length} caracteres): ${prompt.substring(0, 100)}...`);
 
+    // Verificar se o prompt contém solicitação de busca de email
+    let emailSearchResult = '';
+    const emailSearchRegex = /buscar?\s+emails?\s+.*?(\S+\.\S+)/i;
+    const domainMatch = prompt.match(emailSearchRegex);
+    
+    if (domainMatch) {
+      const domain = domainMatch[1];
+      console.log(`🔍 Detectada busca de email para domínio: ${domain}`);
+      
+      const hunterResult = await searchEmailsHunter(domain);
+      if (hunterResult && hunterResult.data) {
+        const emails = hunterResult.data.emails || [];
+        emailSearchResult = `\n\n📧 RESULTADOS DE BUSCA DE EMAIL (Hunter.ai):\n`;
+        emailSearchResult += `Domínio: ${domain}\n`;
+        emailSearchResult += `Emails encontrados: ${emails.length}\n`;
+        
+        if (emails.length > 0) {
+          emailSearchResult += `\nEmails públicos localizados:\n`;
+          emails.slice(0, 10).forEach((email: any, index: number) => {
+            emailSearchResult += `${index + 1}. ${email.value}${email.first_name ? ` (${email.first_name} ${email.last_name || ''})` : ''}\n`;
+          });
+          
+          if (emails.length > 10) {
+            emailSearchResult += `... e mais ${emails.length - 10} emails encontrados.\n`;
+          }
+        } else {
+          emailSearchResult += `Nenhum email público foi encontrado para este domínio.\n`;
+        }
+        
+        emailSearchResult += `\n⚠️ IMPORTANTE: Estes são dados públicos. Sempre validar informações e respeitar a privacidade.`;
+      } else {
+        emailSearchResult = `\n\n📧 Busca de email para ${domain}: Não foi possível obter resultados no momento.`;
+      }
+    }
+
     const requestBody = {
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt }
+        { role: 'user', content: prompt + emailSearchResult }
       ],
       temperature: 0.2,
-      max_tokens: 1000,
+      max_tokens: 1500,
     };
 
     console.log('🚀 Enviando requisição para OpenAI API...');

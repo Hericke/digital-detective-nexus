@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send, AlertCircle, RefreshCw } from "lucide-react";
+import { MessageSquare, Send, AlertCircle, RefreshCw, Mail } from "lucide-react";
 import Navbar from '@/components/Navbar';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -34,16 +34,17 @@ const AiChat = () => {
     
     const userMessage = { role: 'user' as const, content: input };
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
     
     try {
       console.log("🚀 Chamando função Supabase: ai-osint-chat");
-      console.log("📝 Prompt enviado:", input.substring(0, 100) + "...");
+      console.log("📝 Prompt enviado:", currentInput.substring(0, 100) + "...");
       
       const { data, error } = await supabase.functions.invoke('ai-osint-chat', {
         body: {
-          prompt: input
+          prompt: currentInput
         }
       });
       
@@ -113,6 +114,10 @@ const AiChat = () => {
     }
   };
 
+  const addEmailSearchExample = () => {
+    setInput('Buscar emails do domínio example.com');
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
@@ -128,10 +133,14 @@ const AiChat = () => {
           </p>
           
           {/* Indicador de status da API */}
-          <div className="mt-2 flex items-center gap-2 text-sm">
+          <div className="mt-2 flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="text-muted-foreground">API OpenAI configurada</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Mail className="w-3 h-3 text-blue-500" />
+              <span className="text-muted-foreground">Hunter.ai integrado</span>
             </div>
           </div>
         </div>
@@ -150,6 +159,14 @@ const AiChat = () => {
                       <li>"Como investigar um perfil suspeito nas redes sociais?"</li>
                       <li>"Quais fontes públicas posso usar para verificar informações?"</li>
                       <li>"Como fazer busca reversa de imagem?"</li>
+                      <li>
+                        <button 
+                          onClick={addEmailSearchExample}
+                          className="text-blue-500 hover:underline"
+                        >
+                          "Buscar emails do domínio example.com"
+                        </button>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -176,7 +193,11 @@ const AiChat = () => {
                     <div className="h-2 w-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                     <div className="h-2 w-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
-                  <span className="text-sm text-muted-foreground">Analisando dados...</span>
+                  <span className="text-sm text-muted-foreground">
+                    {input.toLowerCase().includes('email') || input.toLowerCase().includes('buscar') 
+                      ? 'Analisando dados e buscando emails...' 
+                      : 'Analisando dados...'}
+                  </span>
                 </div>
               </div>
             )}
@@ -186,7 +207,7 @@ const AiChat = () => {
           <form onSubmit={handleSubmit} className="flex items-end gap-2">
             <div className="flex-1">
               <Textarea 
-                placeholder="Digite sua pergunta sobre investigação OSINT..."
+                placeholder="Digite sua pergunta sobre investigação OSINT... (Ex: 'Buscar emails do domínio example.com')"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 className="resize-none min-h-[80px]"
