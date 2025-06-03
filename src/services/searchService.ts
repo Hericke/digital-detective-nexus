@@ -1,10 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 // API Keys para serviços externos
 const YOUTUBE_API_KEY = "AIzaSyC_v74qHgKG_8YjKxC2ABhTWUKSkGlY-H8";
-const FACEBOOK_META_TOKEN = "EAAavVCQscy0BO1yuGXec3zHD9hTjAf2PO5WZAKOWsmfPPLJrPv3nX9MlcGVYPzsyK6CdbZB624YZBXnNuL6YlfjJoI6bo86D5ZLahCJ7PXdmkEWrcwIPKMrB9E0PZChY4DFnE66DNtytPcFZBQ1ZCjOSS0atyfkt5ZB40NVFlVMFJo1uNeQ3q9cTrDn";
 
 // Tipo para informações de perfil
 export interface ProfileInfo {
@@ -381,13 +379,13 @@ async function performRealSearch(searchTerm: string): Promise<ProfileInfo[]> {
   const profiles: ProfileInfo[] = [];
 
   try {
-    // Busca no YouTube usando a API
-    const youtubeProfiles = await searchYouTube(searchTerm);
-    profiles.push(...youtubeProfiles);
-    
-    // Busca no Facebook/Instagram usando a API
-    const facebookProfiles = await searchFacebook(searchTerm);
-    profiles.push(...facebookProfiles);
+    // Busca no YouTube usando a API (se disponível)
+    try {
+      const youtubeProfiles = await searchYouTube(searchTerm);
+      profiles.push(...youtubeProfiles);
+    } catch (error) {
+      console.error('Erro na busca do YouTube:', error);
+    }
     
     // Busca no Twitter/X
     const twitterProfiles = await searchTwitter(searchTerm);
