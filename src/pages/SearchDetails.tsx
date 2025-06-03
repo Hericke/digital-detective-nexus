@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import ProfileCard from '@/components/ProfileCard';
+import ContactInfo from '@/components/ContactInfo';
 import ResultsDisplay from '@/components/ResultsDisplay';
 import { ArrowLeft, Loader2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -124,6 +125,7 @@ const SearchDetails = () => {
               </div>
               
               <ProfileCard profiles={searchResults} />
+              <ContactInfo profiles={searchResults} />
               <ResultsDisplay results={searchResults} />
             </>
           )}

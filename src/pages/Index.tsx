@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import SearchInterface from '@/components/SearchInterface';
 import ResultsDisplay from '@/components/ResultsDisplay';
 import ProfileCard from '@/components/ProfileCard';
+import ContactInfo from '@/components/ContactInfo';
 import SearchHistory from '@/components/SearchHistory';
 import ProcessSearch from '@/components/ProcessSearch';
 import LocationMap from '@/components/LocationMap';
@@ -18,7 +19,10 @@ const Index = () => {
   const [searchResults, setSearchResults] = useState<ProfileInfo[]>([]);
   const [searchId, setSearchId] = useState<string | undefined>(undefined);
   
+  console.log('Index: Renderizando página principal', { authLoading, searchResults: searchResults.length });
+  
   const handleSearchResults = (results: ProfileInfo[], newSearchId?: string) => {
+    console.log('Index: Novos resultados de pesquisa recebidos', { results: results.length, newSearchId });
     setSearchResults(results);
     if (newSearchId) {
       setSearchId(newSearchId);
@@ -36,15 +40,17 @@ const Index = () => {
   };
 
   const handleNewSearch = () => {
+    console.log('Index: Nova pesquisa iniciada');
     setSearchResults([]);
     setSearchId(undefined);
   };
 
   const handleSelectSearch = async (id: string) => {
     try {
+      console.log('Index: Selecionando pesquisa', id);
       const result = await getSearchById(id);
       if (result.error) {
-        console.error(result.error);
+        console.error('Index: Erro ao carregar pesquisa:', result.error);
         return;
       }
       
@@ -59,9 +65,11 @@ const Index = () => {
         });
       }, 100);
     } catch (error) {
-      console.error("Erro ao carregar pesquisa:", error);
+      console.error("Index: Erro ao carregar pesquisa:", error);
     }
   };
+
+  console.log('Index: Estado atual', { authLoading, hasResults: searchResults.length > 0 });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -71,6 +79,7 @@ const Index = () => {
         {authLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
+            <p className="ml-4 text-muted-foreground">Carregando...</p>
           </div>
         ) : (
           <>
@@ -94,6 +103,7 @@ const Index = () => {
             {searchResults.length > 0 && (
               <>
                 <ProfileCard profiles={searchResults} />
+                <ContactInfo profiles={searchResults} />
                 <ResultsDisplay results={searchResults} />
                 <ProcessSearch />
                 <LocationMap profiles={searchResults} />
