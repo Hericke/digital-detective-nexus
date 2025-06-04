@@ -6,7 +6,7 @@ import OSINTInterface from '@/components/osint/OSINTInterface';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const OSINTTools = () => {
+const OSINTTools: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
