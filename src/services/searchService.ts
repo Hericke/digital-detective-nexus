@@ -3,7 +3,7 @@ import { toast } from "@/hooks/use-toast";
 
 // API Keys para serviços externos
 const YOUTUBE_API_KEY = "AIzaSyC_v74qHgKG_8YjKxC2ABhTWUKSkGlY-H8";
-const FACEBOOK_API_TOKEN = 'EAAavVCQscy0BO8lJphWPJsn5ZBR75p8vzBpmueBJZAicVpJgrEzxZC4SQ6y3oZBMyRZAbV6DdgR2HdKIL219uzxWSUc0ZAL5FkZCE0YentIvp8WBCa1kEGMBsXhMrZB17ffwoyFxocWmI9Au0gQIsdZAjVvVZABjDZBk98OjVDKNvuZAu20SWrwlsNIXVM2Q5EXgPPjwdvEEfp6nMs55cZC3CjGau56wk8Yi5oEHboe8ZD';
+const FACEBOOK_API_TOKEN = 'EAAKUSAxkgy8BO2KoZBrZCEPZC7iZCL1WRESAf9qHiKWtOvY8Y5YfZBZBYZA9j4JpnBH0zN7IWYzmIGHZANNjtZCDTYT0zBMEmOHlAnBz1HQShtGJLZAophKN0hbs9OTcMFdZBKU6CpBmEYC4rOYDhcf9eY4aeobZCA85a1AcZBvUYShmzRVXCxS9xSApZCjcNTVZBzWwAfVZBW6cpssER2QFU2CR0UbgcPa9ERmgT5syiYh7ANlhA5CTfWQyKk4ZD';
 
 // Tipo para informações de perfil
 export interface ProfileInfo {
@@ -388,6 +388,17 @@ async function performRealSearch(searchTerm: string): Promise<ProfileInfo[]> {
       console.error('Erro na busca do YouTube:', error);
     }
     
+    // Busca no Facebook e Instagram
+    try {
+      const facebookProfiles = await searchFacebook(searchTerm);
+      profiles.push(...facebookProfiles);
+      
+      const instagramProfiles = await searchInstagram(searchTerm);
+      profiles.push(...instagramProfiles);
+    } catch (error) {
+      console.error('Erro na busca do Facebook/Instagram:', error);
+    }
+    
     // Busca no Twitter/X
     const twitterProfiles = await searchTwitter(searchTerm);
     profiles.push(...twitterProfiles);
@@ -487,43 +498,130 @@ async function searchYouTube(query: string): Promise<ProfileInfo[]> {
   }
 }
 
-// Função para pesquisar no Facebook/Instagram usando a API
+// Função para pesquisar no Facebook usando a API atualizada
 async function searchFacebook(query: string): Promise<ProfileInfo[]> {
   try {
-    // Implementação básica de pesquisa no Facebook Graph API
-    // Nota: A API do Facebook é mais complexa e pode requerer permissões específicas
+    console.log('Iniciando busca no Facebook para:', query);
     const encodedQuery = encodeURIComponent(query);
-    const url = `https://graph.facebook.com/v17.0/search?q=${encodedQuery}&type=user,page&fields=id,name,username,picture,link&access_token=${FACEBOOK_API_TOKEN}`;
     
-    const response = await fetch(url);
-    const data = await response.json();
+    // Buscar páginas públicas no Facebook
+    const pagesUrl = `https://graph.facebook.com/v18.0/search?q=${encodedQuery}&type=page&fields=id,name,username,picture,link,about,category,fan_count,is_verified&access_token=${FACEBOOK_API_TOKEN}`;
     
-    if (!response.ok || !data.data || data.error) {
-      console.error("Erro na API do Facebook:", data.error);
-      return [];
+    const pagesResponse = await fetch(pagesUrl);
+    const pagesData = await pagesResponse.json();
+    
+    console.log('Resposta da API do Facebook (páginas):', pagesData);
+    
+    const results: ProfileInfo[] = [];
+    
+    if (pagesData.data && Array.isArray(pagesData.data)) {
+      pagesData.data.forEach((item: any) => {
+        results.push({
+          name: item.name,
+          username: item.username || item.name.toLowerCase().replace(/\s+/g, '.'),
+          bio: item.about || `${item.category || 'Página'} no Facebook`,
+          avatar: item.picture?.data?.url,
+          url: item.link || `https://www.facebook.com/${item.id}`,
+          platform: "Facebook",
+          platformIcon: "facebook",
+          category: "Redes Sociais",
+          verified: !!item.is_verified,
+          followers: item.fan_count,
+        });
+      });
     }
-
-    return data.data.map((item: any) => ({
-      name: item.name,
-      username: item.username || item.name.toLowerCase().replace(/\s+/g, '.'),
-      avatar: item.picture?.data?.url,
-      url: item.link || `https://www.facebook.com/${item.id}`,
-      platform: "Facebook",
-      platformIcon: "facebook",
-      category: "Redes Sociais",
-      verified: !!item.is_verified,
-    }));
+    
+    // Se não encontrar resultados específicos, criar uma busca genérica
+    if (results.length === 0) {
+      results.push({
+        name: query,
+        username: query.toLowerCase().replace(/\s+/g, '.'),
+        platform: "Facebook",
+        platformIcon: "facebook",
+        category: "Redes Sociais",
+        bio: "Buscar perfil no Facebook",
+        url: `https://www.facebook.com/search/top?q=${encodedQuery}`,
+      });
+    }
+    
+    return results;
+    
   } catch (error) {
-    console.error("Erro ao buscar no Facebook:", error);
-    // Simulação de perfil do Facebook quando a API falha
+    console.error("Erro detalhado ao buscar no Facebook:", error);
+    
+    // Fallback para busca manual
     return [{
       name: query,
       username: query.toLowerCase().replace(/\s+/g, '.'),
       platform: "Facebook",
       platformIcon: "facebook",
       category: "Redes Sociais",
-      bio: "Perfil encontrado em dados públicos",
+      bio: "Buscar perfil no Facebook (busca manual)",
       url: `https://www.facebook.com/search/top?q=${encodeURIComponent(query)}`,
+    }];
+  }
+}
+
+// Função para pesquisar no Instagram
+async function searchInstagram(query: string): Promise<ProfileInfo[]> {
+  try {
+    console.log('Iniciando busca no Instagram para:', query);
+    const encodedQuery = encodeURIComponent(query);
+    
+    // Buscar contas de negócio no Instagram via Facebook Graph API
+    const instagramUrl = `https://graph.facebook.com/v18.0/search?q=${encodedQuery}&type=instagram_business_account&fields=id,username,name,biography,profile_picture_url,followers_count,media_count,website&access_token=${FACEBOOK_API_TOKEN}`;
+    
+    const response = await fetch(instagramUrl);
+    const data = await response.json();
+    
+    console.log('Resposta da API do Instagram:', data);
+    
+    const results: ProfileInfo[] = [];
+    
+    if (data.data && Array.isArray(data.data)) {
+      data.data.forEach((item: any) => {
+        results.push({
+          name: item.name || item.username,
+          username: item.username,
+          bio: item.biography || "Perfil do Instagram",
+          avatar: item.profile_picture_url,
+          url: item.website || `https://www.instagram.com/${item.username}`,
+          platform: "Instagram",
+          platformIcon: "instagram",
+          category: "Redes Sociais",
+          followers: item.followers_count,
+          posts: item.media_count,
+        });
+      });
+    }
+    
+    // Se não encontrar resultados específicos, criar uma busca genérica
+    if (results.length === 0) {
+      results.push({
+        name: query,
+        username: query.toLowerCase().replace(/\s+/g, ''),
+        platform: "Instagram",
+        platformIcon: "instagram",
+        category: "Redes Sociais",
+        bio: "Buscar perfil no Instagram",
+        url: `https://www.instagram.com/explore/search/keyword/?q=${encodedQuery}`,
+      });
+    }
+    
+    return results;
+    
+  } catch (error) {
+    console.error("Erro detalhado ao buscar no Instagram:", error);
+    
+    // Fallback para busca manual
+    return [{
+      name: query,
+      username: query.toLowerCase().replace(/\s+/g, ''),
+      platform: "Instagram",
+      platformIcon: "instagram",
+      category: "Redes Sociais",
+      bio: "Buscar perfil no Instagram (busca manual)",
+      url: `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(query)}`,
     }];
   }
 }
