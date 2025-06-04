@@ -12,6 +12,7 @@ import AiChat from "./pages/AiChat";
 import GoogleMapPage from "./pages/GoogleMapPage";
 import ImageAnalysisPage from "./pages/ImageAnalysisPage";
 import YouTubeSearchPage from "./pages/YouTubeSearchPage";
+import OSINTTools from "./pages/OSINTTools";
 import { AuthProvider } from "./contexts/AuthContext";
 
 // Criar um cliente de consulta com configurações melhores para UX
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/google-map" element={<GoogleMapPage />} />
             <Route path="/image-analysis" element={<ImageAnalysisPage />} />
             <Route path="/youtube-search" element={<YouTubeSearchPage />} />
+            <Route path="/osint-tools" element={<OSINTTools />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

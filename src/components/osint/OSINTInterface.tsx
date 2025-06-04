@@ -43,8 +43,12 @@ const OSINTInterface: React.FC = () => {
     }
 
     setIsLoading(true);
+    setResults([]);
+    
     try {
+      console.log('Iniciando validação de telefone:', phoneNumber);
       const result = await validatePhone(phoneNumber);
+      
       if (result) {
         setResults([{ type: 'phone', data: result, source: 'NumVerify' }]);
         toast({
@@ -54,16 +58,19 @@ const OSINTInterface: React.FC = () => {
       } else {
         toast({
           title: "Erro na validação",
-          description: "Não foi possível validar o telefone",
+          description: "Não foi possível validar o telefone. Verifique se o número está correto.",
           variant: "destructive"
         });
+        setResults([]);
       }
     } catch (error) {
+      console.error('Erro completo:', error);
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao validar o telefone",
+        description: "Ocorreu um erro ao validar o telefone. Tente novamente.",
         variant: "destructive"
       });
+      setResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -80,8 +87,12 @@ const OSINTInterface: React.FC = () => {
     }
 
     setIsLoading(true);
+    setResults([]);
+    
     try {
+      console.log('Iniciando verificação de email:', emailAddress);
       const result = await verifyEmail(emailAddress);
+      
       if (result) {
         setResults([{ type: 'email', data: result, source: 'Hunter.io' }]);
         toast({
@@ -91,16 +102,19 @@ const OSINTInterface: React.FC = () => {
       } else {
         toast({
           title: "Erro na verificação",
-          description: "Não foi possível verificar o email",
+          description: "Não foi possível verificar o email. Verifique se o endereço está correto.",
           variant: "destructive"
         });
+        setResults([]);
       }
     } catch (error) {
+      console.error('Erro completo:', error);
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao verificar o email",
+        description: "Ocorreu um erro ao verificar o email. Tente novamente.",
         variant: "destructive"
       });
+      setResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -117,8 +131,12 @@ const OSINTInterface: React.FC = () => {
     }
 
     setIsLoading(true);
+    setResults([]);
+    
     try {
+      console.log('Iniciando busca de email:', emailName, emailDomain);
       const result = await findEmailByName(emailName, emailDomain);
+      
       if (result) {
         setResults([{ type: 'email', data: result, source: 'Hunter.io' }]);
         toast({
@@ -133,11 +151,13 @@ const OSINTInterface: React.FC = () => {
         setResults([]);
       }
     } catch (error) {
+      console.error('Erro completo:', error);
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao buscar o email",
+        description: "Ocorreu um erro ao buscar o email. Tente novamente.",
         variant: "destructive"
       });
+      setResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -163,8 +183,12 @@ const OSINTInterface: React.FC = () => {
     }
 
     setIsLoading(true);
+    setResults([]);
+    
     try {
+      console.log('Iniciando consulta CNPJ:', cnpjNumber);
       const result = await searchCNPJ(cnpjNumber);
+      
       if (result) {
         setResults([{ type: 'cnpj', data: result, source: 'ReceitaWS' }]);
         toast({
@@ -177,13 +201,16 @@ const OSINTInterface: React.FC = () => {
           description: "Não foi possível encontrar dados para este CNPJ",
           variant: "destructive"
         });
+        setResults([]);
       }
     } catch (error) {
+      console.error('Erro completo:', error);
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao consultar o CNPJ",
+        description: "Ocorreu um erro ao consultar o CNPJ. Tente novamente.",
         variant: "destructive"
       });
+      setResults([]);
     } finally {
       setIsLoading(false);
     }

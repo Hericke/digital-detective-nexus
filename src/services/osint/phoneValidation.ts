@@ -1,7 +1,7 @@
 
 // Serviço para validação de telefone usando NumVerify API
 const NUMVERIFY_API_KEY = 'd102cc02653841a88ca574b39dde37a3';
-const NUMVERIFY_BASE_URL = 'http://apilayer.net/api/validate';
+const NUMVERIFY_BASE_URL = 'https://apilayer.net/api/validate';
 
 export interface PhoneValidationResult {
   valid: boolean;
