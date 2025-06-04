@@ -13,10 +13,14 @@ interface ContactInfoProps {
 const ContactInfo: React.FC<ContactInfoProps> = ({ profiles }) => {
   const { toast } = useToast();
 
+  console.log('ContactInfo: Profiles recebidos:', profiles);
+
   // Extrair todas as informações de contato únicas
   const emails = [...new Set(profiles.filter(p => p.email).map(p => p.email))];
   const phones = [...new Set(profiles.filter(p => p.phone).map(p => p.phone))];
   const locations = [...new Set(profiles.filter(p => p.location).map(p => p.location))];
+
+  console.log('ContactInfo: Informações extraídas:', { emails, phones, locations });
 
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -46,16 +50,13 @@ const ContactInfo: React.FC<ContactInfoProps> = ({ profiles }) => {
     window.open(`https://www.google.com/maps/search/${encodeURIComponent(location)}`, '_blank');
   };
 
-  if (emails.length === 0 && phones.length === 0 && locations.length === 0) {
-    return null;
-  }
-
+  // Sempre mostrar o card, mesmo sem informações específicas
   return (
     <Card className="w-full max-w-4xl mx-auto mt-6 border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background">
       <CardHeader className="bg-primary/10">
         <CardTitle className="flex items-center gap-2 text-primary">
           <Phone className="h-5 w-5" />
-          Informações de Contato Encontradas
+          Informações de Contato
         </CardTitle>
       </CardHeader>
       
@@ -169,6 +170,18 @@ const ContactInfo: React.FC<ContactInfoProps> = ({ profiles }) => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {emails.length === 0 && phones.length === 0 && locations.length === 0 && (
+          <div className="text-center py-8">
+            <div className="bg-muted/30 rounded-lg p-6 border border-muted">
+              <Phone className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">Nenhuma informação de contato encontrada</h3>
+              <p className="text-muted-foreground text-sm">
+                As informações de contato podem não estar disponíveis publicamente ou podem estar em perfis privados.
+              </p>
             </div>
           </div>
         )}
