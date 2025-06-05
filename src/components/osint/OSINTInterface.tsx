@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,13 +11,18 @@ import {
   Search, 
   Loader2,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  Video,
+  MessageCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import OSINTResultCard from './OSINTResultCard';
+import SocialMediaCard from './SocialMediaCard';
 import { validatePhone } from '@/services/osint/phoneValidation';
 import { verifyEmail, findEmailByName } from '@/services/osint/emailSearch';
 import { searchCNPJ, validateCNPJ } from '@/services/osint/cnpjSearch';
+import { searchTikTokProfile } from '@/services/osint/tiktokSearch';
+import { searchTwitterProfile } from '@/services/osint/twitterSearch';
 
 const OSINTInterface: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +35,8 @@ const OSINTInterface: React.FC = () => {
   const [emailName, setEmailName] = useState('');
   const [emailDomain, setEmailDomain] = useState('');
   const [cnpjNumber, setCnpjNumber] = useState('');
+  const [tikTokUsername, setTikTokUsername] = useState('');
+  const [twitterUsername, setTwitterUsername] = useState('');
 
   const handlePhoneValidation = async () => {
     if (!phoneNumber.trim()) {
@@ -216,6 +222,99 @@ const OSINTInterface: React.FC = () => {
     }
   };
 
+  const handleTikTokSearch = async () => {
+    if (!tikTokUsername.trim()) {
+      toast({
+        title: "Campo obrigatório",
+        description: "Por favor, insira um nome de usuário do TikTok",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setResults([]);
+    
+    try {
+      console.log('Iniciando busca TikTok:', tikTokUsername);
+      const result = await searchTikTokProfile(tikTokUsername);
+      
+      if (result.success && result.data) {
+        setResults([{ type: 'tiktok', data: result.data, source: 'TikTok API' }]);
+        toast({
+          title: "Busca concluída",
+          description: "Perfil TikTok encontrado com sucesso",
+        });
+      } else {
+        toast({
+          title: "Perfil não encontrado",
+          description: result.error || "Não foi possível encontrar o perfil no TikTok",
+          variant: "destructive"
+        });
+        setResults([]);
+      }
+    } catch (error) {
+      console.error('Erro completo:', error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao buscar no TikTok. Tente novamente.",
+        variant: "destructive"
+      });
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTwitterSearch = async () => {
+    if (!twitterUsername.trim()) {
+      toast({
+        title: "Campo obrigatório",
+        description: "Por favor, insira um nome de usuário do Twitter",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setResults([]);
+    
+    try {
+      console.log('Iniciando busca Twitter:', twitterUsername);
+      const result = await searchTwitterProfile(twitterUsername);
+      
+      if (result.success && result.data) {
+        setResults([{ 
+          type: 'twitter', 
+          data: result.data.profile, 
+          recentTweets: result.data.recentTweets,
+          source: 'Twitter API' 
+        }]);
+        toast({
+          title: "Busca concluída",
+          description: "Perfil Twitter encontrado com sucesso",
+        });
+      } else {
+        toast({
+          title: "Perfil não encontrado",
+          description: result.error || "Não foi possível encontrar o perfil no Twitter",
+          variant: "destructive"
+        });
+        setResults([]);
+      }
+    } catch (error) {
+      console.error('Erro completo:', error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao buscar no Twitter. Tente novamente.",
+        variant: "destructive"
+      });
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6">
       <Card className="border-2 border-primary/20">
@@ -227,7 +326,7 @@ const OSINTInterface: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="phone" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="phone" className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
                 Telefone
@@ -239,6 +338,14 @@ const OSINTInterface: React.FC = () => {
               <TabsTrigger value="cnpj" className="flex items-center gap-2">
                 <Building className="h-4 w-4" />
                 CNPJ
+              </TabsTrigger>
+              <TabsTrigger value="tiktok" className="flex items-center gap-2">
+                <Video className="h-4 w-4" />
+                TikTok
+              </TabsTrigger>
+              <TabsTrigger value="twitter" className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4" />
+                Twitter
               </TabsTrigger>
             </TabsList>
 
@@ -360,6 +467,62 @@ const OSINTInterface: React.FC = () => {
                 </p>
               </div>
             </TabsContent>
+
+            <TabsContent value="tiktok" className="space-y-4">
+              <div className="space-y-3">
+                <Label htmlFor="tiktok">Username do TikTok</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="tiktok"
+                    placeholder="@usuario ou usuario"
+                    value={tikTokUsername}
+                    onChange={(e) => setTikTokUsername(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={handleTikTokSearch}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Busca perfis públicos no TikTok e exibe bio, seguidores e estatísticas
+                </p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="twitter" className="space-y-4">
+              <div className="space-y-3">
+                <Label htmlFor="twitter">Username do Twitter/X</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="twitter"
+                    placeholder="@usuario ou usuario"
+                    value={twitterUsername}
+                    onChange={(e) => setTwitterUsername(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={handleTwitterSearch}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Busca perfis públicos no Twitter/X, exibe bio, tweets recentes e estatísticas
+                </p>
+              </div>
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
@@ -369,12 +532,22 @@ const OSINTInterface: React.FC = () => {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Resultados da Consulta</h3>
           {results.map((result, index) => (
-            <OSINTResultCard
-              key={index}
-              type={result.type}
-              data={result.data}
-              source={result.source}
-            />
+            result.type === 'tiktok' || result.type === 'twitter' ? (
+              <SocialMediaCard
+                key={index}
+                type={result.type}
+                profile={result.data}
+                recentTweets={result.recentTweets}
+                source={result.source}
+              />
+            ) : (
+              <OSINTResultCard
+                key={index}
+                type={result.type}
+                data={result.data}
+                source={result.source}
+              />
+            )
           ))}
         </div>
       )}
