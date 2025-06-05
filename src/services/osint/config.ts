@@ -32,3 +32,36 @@ export const API_ENDPOINTS = {
   LINKEDIN_SCRAPER: 'https://li-data-scraper.p.rapidapi.com',
   ZILLOW: 'https://zillow-com1.p.rapidapi.com'
 };
+
+// Função para tratar erros comuns das APIs
+export const handleAPIError = (response: Response, source: string) => {
+  if (response.status === 403) {
+    return {
+      success: false,
+      error: `API não está disponível ou não possui assinatura. Verifique sua conta RapidAPI para: ${source}`,
+      source
+    };
+  }
+  
+  if (response.status === 429) {
+    return {
+      success: false,
+      error: `Limite de requisições excedido para: ${source}. Tente novamente mais tarde.`,
+      source
+    };
+  }
+  
+  if (response.status === 500) {
+    return {
+      success: false,
+      error: `Erro interno no servidor da API: ${source}`,
+      source
+    };
+  }
+  
+  return {
+    success: false,
+    error: `Erro ${response.status} na API: ${source}`,
+    source
+  };
+};

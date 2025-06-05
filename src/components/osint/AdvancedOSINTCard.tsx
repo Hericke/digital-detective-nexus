@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,8 @@ import {
   Search,
   Bug,
   CheckCircle,
-  XCircle
+  XCircle,
+  AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { OSINTAPIResult } from '@/services/osint/types';
@@ -59,9 +59,13 @@ const AdvancedOSINTCard: React.FC<AdvancedOSINTCardProps> = ({ type, result }) =
     }
   };
 
-  const getCardColor = (type: string) => {
+  const getCardColor = (type: string, success: boolean) => {
+    if (!success) {
+      return 'border-red-200 bg-red-50/50 dark:bg-red-950/20 dark:border-red-800';
+    }
+    
     switch (type) {
-      case 'leaks': return 'border-red-200 bg-red-50/50 dark:bg-red-950/20 dark:border-red-800';
+      case 'leaks': return 'border-orange-200 bg-orange-50/50 dark:bg-orange-950/20 dark:border-orange-800';
       case 'email-breach': return 'border-orange-200 bg-orange-50/50 dark:bg-orange-950/20 dark:border-orange-800';
       case 'whatsapp': return 'border-green-200 bg-green-50/50 dark:bg-green-950/20 dark:border-green-800';
       case 'ip-enricher': return 'border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800';
@@ -88,19 +92,49 @@ const AdvancedOSINTCard: React.FC<AdvancedOSINTCardProps> = ({ type, result }) =
     }
   };
 
+  const isSubscriptionError = (error: string) => {
+    return error.includes('não está disponível') || error.includes('assinatura');
+  };
+
   if (!result.success) {
     return (
-      <Card className={`w-full ${getCardColor(type)}`}>
+      <Card className={`w-full ${getCardColor(type, false)}`}>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-destructive">
-            <XCircle className="h-5 w-5" />
-            {getTitle(type)} - Erro
+            {isSubscriptionError(result.error || '') ? (
+              <AlertCircle className="h-5 w-5" />
+            ) : (
+              <XCircle className="h-5 w-5" />
+            )}
+            {getTitle(type)} - {isSubscriptionError(result.error || '') ? 'API Indisponível' : 'Erro'}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">{result.error}</p>
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{result.error}</p>
+            
+            {isSubscriptionError(result.error || '') && (
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-xs text-yellow-700 dark:text-yellow-300">
+                    <p className="font-medium mb-1">Como resolver:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>Acesse sua conta no RapidAPI</li>
+                      <li>Subscribe na API: {result.source}</li>
+                      <li>Verifique se possui créditos suficientes</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t">
             <span>Fonte: {result.source}</span>
+            <Badge variant="destructive" className="text-xs">
+              Falha
+            </Badge>
           </div>
         </CardContent>
       </Card>
@@ -250,7 +284,7 @@ const AdvancedOSINTCard: React.FC<AdvancedOSINTCardProps> = ({ type, result }) =
   };
 
   return (
-    <Card className={`w-full ${getCardColor(type)}`}>
+    <Card className={`w-full ${getCardColor(type, true)}`}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           {getCardIcon(type)}

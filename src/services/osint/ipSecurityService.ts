@@ -1,5 +1,5 @@
 
-import { RAPIDAPI_CONFIG, API_ENDPOINTS } from './config';
+import { RAPIDAPI_CONFIG, API_ENDPOINTS, handleAPIError } from './config';
 import { IPData, PhishingData, OSINTAPIResult } from './types';
 
 export const enrichIP = async (ip: string): Promise<OSINTAPIResult<IPData>> => {
@@ -17,11 +17,8 @@ export const enrichIP = async (ip: string): Promise<OSINTAPIResult<IPData>> => {
     });
 
     if (!response.ok) {
-      return {
-        success: false,
-        error: `Erro na API: ${response.status}`,
-        source: 'IP Enricher'
-      };
+      console.error('Erro na API IP Enricher:', response.status, response.statusText);
+      return handleAPIError(response, 'IP Enricher');
     }
 
     const data = await response.json();
@@ -37,7 +34,7 @@ export const enrichIP = async (ip: string): Promise<OSINTAPIResult<IPData>> => {
     console.error('Erro ao enriquecer IP:', error);
     return {
       success: false,
-      error: 'Erro ao conectar com a API de IP',
+      error: 'Erro ao conectar com a API de IP. Verifique sua conexão.',
       source: 'IP Enricher'
     };
   }
@@ -58,11 +55,8 @@ export const detectPhishing = async (url: string): Promise<OSINTAPIResult<Phishi
     });
 
     if (!response.ok) {
-      return {
-        success: false,
-        error: `Erro na API: ${response.status}`,
-        source: 'Phishing Detection'
-      };
+      console.error('Erro na API Phishing Detection:', response.status, response.statusText);
+      return handleAPIError(response, 'Phishing Detection');
     }
 
     const data = await response.json();
@@ -78,7 +72,7 @@ export const detectPhishing = async (url: string): Promise<OSINTAPIResult<Phishi
     console.error('Erro ao detectar phishing:', error);
     return {
       success: false,
-      error: 'Erro ao conectar com a API de detecção',
+      error: 'Erro ao conectar com a API de detecção. Verifique sua conexão.',
       source: 'Phishing Detection'
     };
   }
@@ -97,11 +91,8 @@ export const scanVulnerabilities = async (ip: string): Promise<OSINTAPIResult> =
     });
 
     if (!response.ok) {
-      return {
-        success: false,
-        error: `Erro na API: ${response.status}`,
-        source: 'Vulnerability Scanner'
-      };
+      console.error('Erro na API Vulnerability Scanner:', response.status, response.statusText);
+      return handleAPIError(response, 'Vulnerability Scanner');
     }
 
     const data = await response.json();
@@ -117,7 +108,7 @@ export const scanVulnerabilities = async (ip: string): Promise<OSINTAPIResult> =
     console.error('Erro ao escanear vulnerabilidades:', error);
     return {
       success: false,
-      error: 'Erro ao conectar com a API de vulnerabilidades',
+      error: 'Erro ao conectar com a API de vulnerabilidades. Verifique sua conexão.',
       source: 'Vulnerability Scanner'
     };
   }

@@ -1,5 +1,5 @@
 
-import { RAPIDAPI_CONFIG, API_ENDPOINTS } from './config';
+import { RAPIDAPI_CONFIG, API_ENDPOINTS, handleAPIError } from './config';
 import { WhatsAppData, OSINTAPIResult } from './types';
 
 export const getWhatsAppProfile = async (phone: string): Promise<OSINTAPIResult<WhatsAppData>> => {
@@ -17,11 +17,8 @@ export const getWhatsAppProfile = async (phone: string): Promise<OSINTAPIResult<
     });
 
     if (!response.ok) {
-      return {
-        success: false,
-        error: `Erro na API: ${response.status}`,
-        source: 'WhatsApp OSINT'
-      };
+      console.error('Erro na API WhatsApp:', response.status, response.statusText);
+      return handleAPIError(response, 'WhatsApp OSINT');
     }
 
     const data = await response.json();
@@ -42,7 +39,7 @@ export const getWhatsAppProfile = async (phone: string): Promise<OSINTAPIResult<
     console.error('Erro ao buscar perfil WhatsApp:', error);
     return {
       success: false,
-      error: 'Erro ao conectar com a API do WhatsApp',
+      error: 'Erro ao conectar com a API do WhatsApp. Verifique sua conexão.',
       source: 'WhatsApp OSINT'
     };
   }
