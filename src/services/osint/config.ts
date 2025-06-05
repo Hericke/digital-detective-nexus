@@ -1,4 +1,3 @@
-
 export const RAPIDAPI_CONFIG = {
   key: "59142cbba6msha2cfe04e9f1fe48p1bac65jsna604cea7e65f",
   headers: {
@@ -7,6 +6,7 @@ export const RAPIDAPI_CONFIG = {
   }
 };
 
+// Apenas APIs que estão funcionando e disponíveis
 export const API_ENDPOINTS = {
   LEAKS: 'https://leaksapi.p.rapidapi.com',
   EMAIL_BREACH: 'https://email-breach-search.p.rapidapi.com',

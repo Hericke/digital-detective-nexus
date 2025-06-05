@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,41 +14,23 @@ import {
   Shield,
   AlertTriangle,
   Video,
-  MessageCircle,
-  Globe,
-  Wifi,
-  Bug,
-  Eye,
-  Link,
-  Database
+  MessageCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import OSINTResultCard from './OSINTResultCard';
 import SocialMediaCard from './SocialMediaCard';
-import AdvancedOSINTCard from './AdvancedOSINTCard';
 import { validatePhone } from '@/services/osint/phoneValidation';
 import { verifyEmail, findEmailByName } from '@/services/osint/emailSearch';
 import { searchCNPJ, validateCNPJ } from '@/services/osint/cnpjSearch';
 import { searchTikTokProfile } from '@/services/osint/tiktokSearch';
 import { searchTwitterProfile } from '@/services/osint/twitterSearch';
-import { 
-  searchDomainLeaks,
-  searchEmailBreach,
-  getWhatsAppProfile,
-  enrichIP,
-  detectPhishing,
-  findSubdomains,
-  scanVulnerabilities,
-  searchOSINTData,
-  searchPhoneLeak
-} from '@/services/osint/advancedOSINTService';
 
 const OSINTInterface: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const { toast } = useToast();
 
-  // Estados para os formulários
+  // Estados para os formulários básicos que funcionam
   const [phoneNumber, setPhoneNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [emailName, setEmailName] = useState('');
@@ -55,15 +38,6 @@ const OSINTInterface: React.FC = () => {
   const [cnpjNumber, setCnpjNumber] = useState('');
   const [tikTokUsername, setTikTokUsername] = useState('');
   const [twitterUsername, setTwitterUsername] = useState('');
-
-  // Estados para as novas APIs
-  const [domainLeaks, setDomainLeaks] = useState('');
-  const [emailBreach, setEmailBreach] = useState('');
-  const [whatsappPhone, setWhatsappPhone] = useState('');
-  const [ipAddress, setIpAddress] = useState('');
-  const [phishingUrl, setPhishingUrl] = useState('');
-  const [subdomainDomain, setSubdomainDomain] = useState('');
-  const [osintQuery, setOsintQuery] = useState('');
 
   const handlePhoneValidation = async () => {
     if (!phoneNumber.trim()) {
@@ -342,299 +316,18 @@ const OSINTInterface: React.FC = () => {
     }
   };
 
-  // Novos handlers para as APIs avançadas
-  const handleDomainLeaksSearch = async () => {
-    if (!domainLeaks.trim()) {
-      toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira um domínio",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setResults([]);
-    
-    try {
-      const result = await searchDomainLeaks(domainLeaks);
-      
-      if (result.success) {
-        setResults([{ type: 'advanced-osint', data: result, osintType: 'leaks' }]);
-        toast({
-          title: "Busca concluída",
-          description: "Vazamentos encontrados",
-        });
-      } else {
-        toast({
-          title: "Erro na busca",
-          description: result.error,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao buscar vazamentos",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleEmailBreachSearch = async () => {
-    if (!emailBreach.trim()) {
-      toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira um email",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setResults([]);
-    
-    try {
-      const result = await searchEmailBreach(emailBreach);
-      
-      if (result.success) {
-        setResults([{ type: 'advanced-osint', data: result, osintType: 'email-breach' }]);
-        toast({
-          title: "Busca concluída",
-          description: "Violações encontradas",
-        });
-      } else {
-        toast({
-          title: "Erro na busca",
-          description: result.error,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao buscar violações",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleWhatsAppSearch = async () => {
-    if (!whatsappPhone.trim()) {
-      toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira um telefone",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setResults([]);
-    
-    try {
-      const result = await getWhatsAppProfile(whatsappPhone);
-      
-      if (result.success) {
-        setResults([{ type: 'advanced-osint', data: result, osintType: 'whatsapp' }]);
-        toast({
-          title: "Busca concluída",
-          description: "Perfil WhatsApp encontrado",
-        });
-      } else {
-        toast({
-          title: "Erro na busca",
-          description: result.error,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao buscar perfil WhatsApp",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleIPEnrichment = async () => {
-    if (!ipAddress.trim()) {
-      toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira um endereço IP",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setResults([]);
-    
-    try {
-      const result = await enrichIP(ipAddress);
-      
-      if (result.success) {
-        setResults([{ type: 'advanced-osint', data: result, osintType: 'ip-enricher' }]);
-        toast({
-          title: "Busca concluída",
-          description: "Informações de IP obtidas",
-        });
-      } else {
-        toast({
-          title: "Erro na busca",
-          description: result.error,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao enriquecer IP",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePhishingDetection = async () => {
-    if (!phishingUrl.trim()) {
-      toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira uma URL",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setResults([]);
-    
-    try {
-      const result = await detectPhishing(phishingUrl);
-      
-      if (result.success) {
-        setResults([{ type: 'advanced-osint', data: result, osintType: 'phishing' }]);
-        toast({
-          title: "Análise concluída",
-          description: "URL analisada",
-        });
-      } else {
-        toast({
-          title: "Erro na análise",
-          description: result.error,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao analisar URL",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubdomainSearch = async () => {
-    if (!subdomainDomain.trim()) {
-      toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira um domínio",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setResults([]);
-    
-    try {
-      const result = await findSubdomains(subdomainDomain);
-      
-      if (result.success) {
-        setResults([{ type: 'advanced-osint', data: result, osintType: 'subdomain' }]);
-        toast({
-          title: "Busca concluída",
-          description: "Subdomínios encontrados",
-        });
-      } else {
-        toast({
-          title: "Erro na busca",
-          description: result.error,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao buscar subdomínios",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOSINTSearch = async () => {
-    if (!osintQuery.trim()) {
-      toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira um termo de busca",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setResults([]);
-    
-    try {
-      const result = await searchOSINTData(osintQuery);
-      
-      if (result.success) {
-        setResults([{ type: 'advanced-osint', data: result, osintType: 'osint-search' }]);
-        toast({
-          title: "Busca concluída",
-          description: "Dados OSINT encontrados",
-        });
-      } else {
-        toast({
-          title: "Erro na busca",
-          description: result.error,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao buscar dados OSINT",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6">
       <Card className="border-2 border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" />
-            Ferramentas OSINT Avançadas
+            Ferramentas OSINT Disponíveis
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="phone" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="phone" className="flex items-center gap-1 text-xs">
                 <Phone className="h-3 w-3" />
                 Telefone
@@ -654,18 +347,6 @@ const OSINTInterface: React.FC = () => {
               <TabsTrigger value="twitter" className="flex items-center gap-1 text-xs">
                 <MessageCircle className="h-3 w-3" />
                 Twitter
-              </TabsTrigger>
-              <TabsTrigger value="leaks" className="flex items-center gap-1 text-xs">
-                <Database className="h-3 w-3" />
-                Vazamentos
-              </TabsTrigger>
-              <TabsTrigger value="security" className="flex items-center gap-1 text-xs">
-                <Bug className="h-3 w-3" />
-                Segurança
-              </TabsTrigger>
-              <TabsTrigger value="osint" className="flex items-center gap-1 text-xs">
-                <Eye className="h-3 w-3" />
-                OSINT
               </TabsTrigger>
             </TabsList>
 
@@ -843,187 +524,6 @@ const OSINTInterface: React.FC = () => {
                 </p>
               </div>
             </TabsContent>
-
-            <TabsContent value="leaks" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <Label>Vazamentos de Domínio</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="exemplo.com"
-                      value={domainLeaks}
-                      onChange={(e) => setDomainLeaks(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleDomainLeaksSearch}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Busca vazamentos relacionados a um domínio específico
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Violação de Email</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="email@exemplo.com"
-                      value={emailBreach}
-                      onChange={(e) => setEmailBreach(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleEmailBreachSearch}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Verifica se um email esteve envolvido em vazamentos
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="security" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-3">
-                  <Label>WhatsApp OSINT</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="+5511999999999"
-                      value={whatsappPhone}
-                      onChange={(e) => setWhatsappPhone(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleWhatsAppSearch}
-                      disabled={isLoading}
-                      size="sm"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Enriquecimento de IP</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="192.168.1.1"
-                      value={ipAddress}
-                      onChange={(e) => setIpAddress(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleIPEnrichment}
-                      disabled={isLoading}
-                      size="sm"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Detecção de Phishing</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="https://exemplo.com"
-                      value={phishingUrl}
-                      onChange={(e) => setPhishingUrl(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handlePhishingDetection}
-                      disabled={isLoading}
-                      size="sm"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="osint" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <Label>Busca de Subdomínios</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="exemplo.com"
-                      value={subdomainDomain}
-                      onChange={(e) => setSubdomainDomain(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleSubdomainSearch}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Encontra subdomínios associados a um domínio principal
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Busca OSINT Geral</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="nome, email ou telefone"
-                      value={osintQuery}
-                      onChange={(e) => setOsintQuery(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleOSINTSearch}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Busca ampla por informações públicas disponíveis
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
@@ -1033,15 +533,7 @@ const OSINTInterface: React.FC = () => {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Resultados da Consulta</h3>
           {results.map((result, index) => {
-            if (result.type === 'advanced-osint') {
-              return (
-                <AdvancedOSINTCard
-                  key={index}
-                  type={result.osintType}
-                  result={result.data}
-                />
-              );
-            } else if (result.type === 'tiktok' || result.type === 'twitter') {
+            if (result.type === 'tiktok' || result.type === 'twitter') {
               return (
                 <SocialMediaCard
                   key={index}
