@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || '';
+const deepseekApiKey = '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';
 const hunterApiKey = '3c7e7e1618c69e65f2f41cd0e7b9bc7c72218977';
 
 const corsHeaders = {
@@ -68,10 +68,10 @@ serve(async (req) => {
     console.log('=== INÍCIO DA FUNÇÃO AI-OSINT-CHAT ===');
     
     // Verificar se a chave API está configurada
-    if (!openaiApiKey || openaiApiKey === '') {
-      console.error('❌ ERRO: OPENAI_API_KEY não está configurada');
+    if (!deepseekApiKey || deepseekApiKey === '') {
+      console.error('❌ ERRO: Chave API do DeepSeek não está configurada');
       return new Response(JSON.stringify({ 
-        error: 'Chave da API OpenAI não configurada. Verifique as configurações no Supabase.' 
+        error: 'Chave da API DeepSeek não configurada.' 
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -79,10 +79,10 @@ serve(async (req) => {
     }
 
     // Log da chave (apenas os primeiros e últimos caracteres por segurança)
-    const keyPreview = openaiApiKey.length > 10 
-      ? `${openaiApiKey.substring(0, 7)}...${openaiApiKey.substring(openaiApiKey.length - 4)}`
+    const keyPreview = deepseekApiKey.length > 10 
+      ? `${deepseekApiKey.substring(0, 7)}...${deepseekApiKey.substring(deepseekApiKey.length - 4)}`
       : 'CHAVE_MUITO_CURTA';
-    console.log(`✅ Chave API encontrada: ${keyPreview}`);
+    console.log(`✅ Chave API DeepSeek encontrada: ${keyPreview}`);
 
     const reqBody = await req.json();
     const prompt = reqBody.prompt;
@@ -133,7 +133,7 @@ serve(async (req) => {
     }
 
     const requestBody = {
-      model: 'gpt-4o-mini',
+      model: 'deepseek/deepseek-chat-v3-0324:free',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt + emailSearchResult }
@@ -142,35 +142,35 @@ serve(async (req) => {
       max_tokens: 1500,
     };
 
-    console.log('🚀 Enviando requisição para OpenAI API...');
+    console.log('🚀 Enviando requisição para DeepSeek via OpenRouter...');
     console.log(`📊 Modelo: ${requestBody.model}, Temperature: ${requestBody.temperature}, Max tokens: ${requestBody.max_tokens}`);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${deepseekApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
     });
 
-    console.log(`📡 Resposta da OpenAI - Status: ${response.status} ${response.statusText}`);
+    console.log(`📡 Resposta do DeepSeek - Status: ${response.status} ${response.statusText}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ ERRO DA OPENAI API (${response.status}):`, errorText);
+      console.error(`❌ ERRO DA API DEEPSEEK (${response.status}):`, errorText);
       
-      let errorMessage = 'Erro na comunicação com a API da OpenAI';
+      let errorMessage = 'Erro na comunicação com a API do DeepSeek';
       
       // Tratamento específico para diferentes tipos de erro
       if (response.status === 401) {
-        errorMessage = 'Chave da API OpenAI inválida ou expirada. Verifique sua chave API.';
+        errorMessage = 'Chave da API DeepSeek inválida ou expirada. Verifique sua chave API.';
       } else if (response.status === 429) {
-        errorMessage = 'Limite de requisições excedido ou créditos insuficientes na conta OpenAI.';
+        errorMessage = 'Limite de requisições excedido ou créditos insuficientes na conta DeepSeek.';
       } else if (response.status === 400) {
-        errorMessage = 'Requisição inválida enviada para a OpenAI. Verifique os parâmetros.';
+        errorMessage = 'Requisição inválida enviada para o DeepSeek. Verifique os parâmetros.';
       } else if (response.status >= 500) {
-        errorMessage = 'Erro interno do servidor da OpenAI. Tente novamente em alguns minutos.';
+        errorMessage = 'Erro interno do servidor do DeepSeek. Tente novamente em alguns minutos.';
       }
       
       return new Response(JSON.stringify({ 
@@ -182,7 +182,7 @@ serve(async (req) => {
             response.status === 401 ? 'Chave API inválida ou expirada' : null,
             response.status === 429 ? 'Limite de requisições ou créditos insuficientes' : null,
             response.status === 400 ? 'Parâmetros da requisição inválidos' : null,
-            response.status >= 500 ? 'Erro do servidor OpenAI' : null
+            response.status >= 500 ? 'Erro do servidor DeepSeek' : null
           ].filter(Boolean)
         }
       }), {
@@ -192,7 +192,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('✅ Resposta recebida da OpenAI com sucesso');
+    console.log('✅ Resposta recebida do DeepSeek com sucesso');
     console.log(`📊 Dados recebidos - Choices: ${data.choices?.length || 0}`);
     
     let generatedText = '';
@@ -201,8 +201,8 @@ serve(async (req) => {
       generatedText = data.choices[0].message.content;
       console.log(`✅ Texto gerado com sucesso (${generatedText.length} caracteres)`);
     } else {
-      console.error('❌ ERRO: Formato de resposta inesperado da OpenAI:', JSON.stringify(data, null, 2));
-      throw new Error('Resposta inesperada da API da OpenAI - formato inválido');
+      console.error('❌ ERRO: Formato de resposta inesperado do DeepSeek:', JSON.stringify(data, null, 2));
+      throw new Error('Resposta inesperada da API do DeepSeek - formato inválido');
     }
 
     console.log('=== FUNÇÃO CONCLUÍDA COM SUCESSO ===');

@@ -55,8 +55,8 @@ const AiChat = () => {
         
         let errorMessage = 'Erro na comunicação com a IA';
         
-        if (error.message?.includes('API') || error.message?.includes('OpenAI')) {
-          errorMessage = 'Problema com a API da OpenAI. Verifique as configurações.';
+        if (error.message?.includes('API') || error.message?.includes('DeepSeek')) {
+          errorMessage = 'Problema com a API do DeepSeek. Verifique as configurações.';
         } else if (error.message?.includes('401')) {
           errorMessage = 'Chave da API inválida. Verifique a configuração no Supabase.';
         } else if (error.message?.includes('429')) {
@@ -136,7 +136,7 @@ const AiChat = () => {
           <div className="mt-2 flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-muted-foreground">API OpenAI configurada</span>
+              <span className="text-muted-foreground">DeepSeek API configurada</span>
             </div>
             <div className="flex items-center gap-1">
               <Mail className="w-3 h-3 text-blue-500" />
