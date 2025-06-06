@@ -67,23 +67,6 @@ serve(async (req) => {
   try {
     console.log('=== INÍCIO DA FUNÇÃO AI-OSINT-CHAT ===');
     
-    // Verificar se a chave API está configurada
-    if (!deepseekApiKey || deepseekApiKey === '') {
-      console.error('❌ ERRO: Chave API do DeepSeek não está configurada');
-      return new Response(JSON.stringify({ 
-        error: 'Chave da API DeepSeek não configurada.' 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Log da chave (apenas os primeiros e últimos caracteres por segurança)
-    const keyPreview = deepseekApiKey.length > 10 
-      ? `${deepseekApiKey.substring(0, 7)}...${deepseekApiKey.substring(deepseekApiKey.length - 4)}`
-      : 'CHAVE_MUITO_CURTA';
-    console.log(`✅ Chave API DeepSeek encontrada: ${keyPreview}`);
-
     const reqBody = await req.json();
     const prompt = reqBody.prompt;
     
@@ -143,7 +126,6 @@ serve(async (req) => {
     };
 
     console.log('🚀 Enviando requisição para DeepSeek via OpenRouter...');
-    console.log(`📊 Modelo: ${requestBody.model}, Temperature: ${requestBody.temperature}, Max tokens: ${requestBody.max_tokens}`);
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -160,31 +142,9 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error(`❌ ERRO DA API DEEPSEEK (${response.status}):`, errorText);
       
-      let errorMessage = 'Erro na comunicação com a API do DeepSeek';
-      
-      // Tratamento específico para diferentes tipos de erro
-      if (response.status === 401) {
-        errorMessage = 'Chave da API DeepSeek inválida ou expirada. Verifique sua chave API.';
-      } else if (response.status === 429) {
-        errorMessage = 'Limite de requisições excedido ou créditos insuficientes na conta DeepSeek.';
-      } else if (response.status === 400) {
-        errorMessage = 'Requisição inválida enviada para o DeepSeek. Verifique os parâmetros.';
-      } else if (response.status >= 500) {
-        errorMessage = 'Erro interno do servidor do DeepSeek. Tente novamente em alguns minutos.';
-      }
-      
       return new Response(JSON.stringify({ 
-        error: errorMessage,
-        details: `Status ${response.status}: ${errorText}`,
-        troubleshooting: {
-          status: response.status,
-          possibleCauses: [
-            response.status === 401 ? 'Chave API inválida ou expirada' : null,
-            response.status === 429 ? 'Limite de requisições ou créditos insuficientes' : null,
-            response.status === 400 ? 'Parâmetros da requisição inválidos' : null,
-            response.status >= 500 ? 'Erro do servidor DeepSeek' : null
-          ].filter(Boolean)
-        }
+        error: `Erro na API DeepSeek: ${response.status}`,
+        details: errorText
       }), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -193,7 +153,6 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log('✅ Resposta recebida do DeepSeek com sucesso');
-    console.log(`📊 Dados recebidos - Choices: ${data.choices?.length || 0}`);
     
     let generatedText = '';
     
@@ -202,7 +161,7 @@ serve(async (req) => {
       console.log(`✅ Texto gerado com sucesso (${generatedText.length} caracteres)`);
     } else {
       console.error('❌ ERRO: Formato de resposta inesperado do DeepSeek:', JSON.stringify(data, null, 2));
-      throw new Error('Resposta inesperada da API do DeepSeek - formato inválido');
+      throw new Error('Resposta inesperada da API do DeepSeek');
     }
 
     console.log('=== FUNÇÃO CONCLUÍDA COM SUCESSO ===');
@@ -212,12 +171,10 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('💥 ERRO CRÍTICO na função AI OSINT chat:', error);
-    console.error('Stack trace:', error.stack);
     
     return new Response(JSON.stringify({ 
-      error: 'Erro interno do servidor. Verifique os logs para mais detalhes.',
-      details: error.message,
-      timestamp: new Date().toISOString()
+      error: 'Erro interno do servidor',
+      details: error.message
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
