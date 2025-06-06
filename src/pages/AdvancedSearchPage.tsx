@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
-import { Search, ExternalLink, FileText, Users, Database, Shield, Globe, Zap } from 'lucide-react';
+import { Search, ExternalLink, FileText, Users, Database, Shield, Globe, Zap, ArrowLeft, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { 
   Accordion,
@@ -31,8 +32,9 @@ const AdvancedSearchPage = () => {
   const [results, setResults] = useState<DorkCategory[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // Dorks pré-cadastradas organizadas por categoria
+  // Dorks pré-cadastradas organizadas por categoria (expandidas com as novas)
   const getDorkCategories = (termo: string): DorkCategory[] => [
     {
       category: "Perfis e Redes Sociais",
@@ -179,6 +181,144 @@ const AdvancedSearchPage = () => {
           url: `https://www.google.com/search?q="${termo}"+inurl:blog+OR+inurl:artigo`
         }
       ]
+    },
+    {
+      category: "Senhas em Arquivos de Texto",
+      icon: <FileText className="h-5 w-5" />,
+      color: "text-red-700",
+      links: [
+        {
+          nome: "Senhas em TXT",
+          url: `https://www.google.com/search?q=intext:"senha"+filetype:txt+"${termo}"`
+        },
+        {
+          nome: "Passwords em TXT",
+          url: `https://www.google.com/search?q=intext:"password"+filetype:txt+"${termo}"`
+        },
+        {
+          nome: "Senhas e usuários",
+          url: `https://www.google.com/search?q="senha+${termo}"+filetype:txt`
+        },
+        {
+          nome: "Login e senha Excel",
+          url: `https://www.google.com/search?q="usuario+${termo}+senha"+filetype:xls+OR+filetype:xlsx`
+        }
+      ]
+    },
+    {
+      category: "Câmeras IP Abertas",
+      icon: <Database className="h-5 w-5" />,
+      color: "text-cyan-600",
+      links: [
+        {
+          nome: "View.shtml cameras",
+          url: `https://www.google.com/search?q=inurl:"/view.shtml"+"${termo}"`
+        },
+        {
+          nome: "AXIS Live View",
+          url: `https://www.google.com/search?q=intitle:"Live+View+-+AXIS"+"${termo}"`
+        },
+        {
+          nome: "Axis CGI cameras",
+          url: `https://www.google.com/search?q=inurl:/axis-cgi/jpg+image.cgi+"${termo}"`
+        },
+        {
+          nome: "ViewerFrame cameras",
+          url: `https://www.google.com/search?q=inurl:ViewerFrame?Mode="+"${termo}"`
+        }
+      ]
+    },
+    {
+      category: "Documentos Confidenciais",
+      icon: <Shield className="h-5 w-5" />,
+      color: "text-amber-600",
+      links: [
+        {
+          nome: "PDF Confidencial",
+          url: `https://www.google.com/search?q=filetype:pdf+confidential+"${termo}"`
+        },
+        {
+          nome: "Excel Governo",
+          url: `https://www.google.com/search?q=filetype:xls+site:gov.br+"${termo}"`
+        },
+        {
+          nome: "Word Governo",
+          url: `https://www.google.com/search?q=filetype:doc+site:gov.br+"${termo}"`
+        },
+        {
+          nome: "Diretórios confidenciais",
+          url: `https://www.google.com/search?q=intitle:"Index+of"+"parent+directory"+"confidential"+"${termo}"`
+        }
+      ]
+    },
+    {
+      category: "Emails e Contatos",
+      icon: <Users className="h-5 w-5" />,
+      color: "text-pink-600",
+      links: [
+        {
+          nome: "Gmail no Pastebin",
+          url: `https://www.google.com/search?q="@gmail.com"+site:pastebin.com+"${termo}"`
+        },
+        {
+          nome: "Gmail em planilhas",
+          url: `https://www.google.com/search?q="email+${termo}+@gmail.com"+filetype:xls`
+        },
+        {
+          nome: "Outlook em TXT",
+          url: `https://www.google.com/search?q=filetype:txt+intext:@outlook.com+"${termo}"`
+        },
+        {
+          nome: "Contatos em CSV",
+          url: `https://www.google.com/search?q="contato+${termo}"+filetype:xls+OR+filetype:csv`
+        }
+      ]
+    },
+    {
+      category: "Bancos de Dados Expostos",
+      icon: <Database className="h-5 w-5" />,
+      color: "text-red-800",
+      links: [
+        {
+          nome: "Arquivos db.sql",
+          url: `https://www.google.com/search?q=intitle:"index+of"+"db.sql"+"${termo}"`
+        },
+        {
+          nome: "Backup SQL",
+          url: `https://www.google.com/search?q=intitle:"index+of"+"backup.sql"+"${termo}"`
+        },
+        {
+          nome: "Insert SQL",
+          url: `https://www.google.com/search?q=filetype:sql+"insert+into"+"${termo}"`
+        },
+        {
+          nome: "Dump SQL",
+          url: `https://www.google.com/search?q="dump.sql"+ext:sql+"${termo}"`
+        }
+      ]
+    },
+    {
+      category: "Usuários e Senhas Expostos",
+      icon: <Shield className="h-5 w-5" />,
+      color: "text-rose-600",
+      links: [
+        {
+          nome: "Arquivos .htpasswd",
+          url: `https://www.google.com/search?q=intitle:"Index+of"+.htpasswd+"${termo}"`
+        },
+        {
+          nome: "Logs de login",
+          url: `https://www.google.com/search?q=filetype:log+intext:login+"${termo}"`
+        },
+        {
+          nome: "Login e password logs",
+          url: `https://www.google.com/search?q="login:"++"password:"+filetype:log+"${termo}"`
+        },
+        {
+          nome: "User password TXT",
+          url: `https://www.google.com/search?q="user+${termo}+password"+filetype:txt`
+        }
+      ]
     }
   ];
 
@@ -207,6 +347,11 @@ const AdvancedSearchPage = () => {
     }, 1000);
   };
 
+  const handleNewSearch = () => {
+    setSearchTerm('');
+    setResults([]);
+  };
+
   const handleLinkClick = (url: string, nome: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
     console.log(`Abrindo busca: ${nome} - URL: ${url}`);
@@ -218,6 +363,29 @@ const AdvancedSearchPage = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
+          {/* Navigation buttons */}
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+            
+            {results.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={handleNewSearch}
+                className="flex items-center gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Nova Pesquisa
+              </Button>
+            )}
+          </div>
+
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
               <Search className="size-8" />
