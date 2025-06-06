@@ -34,7 +34,7 @@ const AdvancedSearchPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Dorks pré-cadastradas organizadas por categoria (expandidas com as novas)
+  // Dorks corrigidas e organizadas por categoria
   const getDorkCategories = (termo: string): DorkCategory[] => [
     {
       category: "Perfis e Redes Sociais",
