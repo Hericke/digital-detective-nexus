@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/home/HeroSection';
-import QuickActions from '@/components/home/QuickActions';
 import SearchStatusInfo from '@/components/home/SearchStatusInfo';
 import SearchSection from '@/components/home/SearchSection';
 import ResultsSection from '@/components/home/ResultsSection';
@@ -84,7 +83,6 @@ const Index = () => {
       
       <main className="flex-1 container mx-auto px-4 py-8 space-y-12">
         <HeroSection />
-        <QuickActions />
         <SearchStatusInfo />
         
         <SearchSection
