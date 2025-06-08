@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Search, Loader2, Database, Info, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, Loader2, Database, Info, ExternalLink, FileText, MapPin, Camera, Youtube, Shield, Zap } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,7 +105,7 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex flex-col md:flex-row gap-2">
             <div className="flex-1 relative">
               <Input
@@ -137,6 +138,50 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
             >
               Nova Pesquisa
             </Button>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-muted-foreground text-center">
+              Ferramentas Rápidas
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              <Link to="/report" className="block">
+                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
+                  <FileText className="h-4 w-4" />
+                  <span className="text-xs">Relatório</span>
+                </Button>
+              </Link>
+              <Link to="/google-map" className="block">
+                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-xs">Mapa Google</span>
+                </Button>
+              </Link>
+              <Link to="/image-analysis" className="block">
+                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
+                  <Camera className="h-4 w-4" />
+                  <span className="text-xs">Análise Imagem</span>
+                </Button>
+              </Link>
+              <Link to="/youtube-search" className="block">
+                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
+                  <Youtube className="h-4 w-4" />
+                  <span className="text-xs">YouTube OSINT</span>
+                </Button>
+              </Link>
+              <Link to="/osint-tools" className="block">
+                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
+                  <Shield className="h-4 w-4" />
+                  <span className="text-xs">OSINT Tools</span>
+                </Button>
+              </Link>
+              <Link to="/advanced-search" className="block">
+                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/40 hover:bg-primary/5 transition-all">
+                  <Zap className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-medium">Busca Profunda</span>
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <Accordion
