@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Loader2, Clock, Database, Info, FileText, ExternalLink, MapPin, Camera, Youtube, Shield, Zap } from 'lucide-react';
+import { Search, Loader2, Database, Info, ExternalLink } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -140,45 +139,6 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
-            <Link to="/report">
-              <Button variant="outline" className="cyber-border w-full h-auto py-2">
-                <FileText className="mr-2 h-4 w-4" />
-                Relatório
-              </Button>
-            </Link>
-            <Link to="/google-map">
-              <Button variant="outline" className="cyber-border w-full h-auto py-2">
-                <MapPin className="mr-2 h-4 w-4" />
-                Mapa Google
-              </Button>
-            </Link>
-            <Link to="/image-analysis">
-              <Button variant="outline" className="cyber-border w-full h-auto py-2">
-                <Camera className="mr-2 h-4 w-4" />
-                Análise Imagem
-              </Button>
-            </Link>
-            <Link to="/youtube-search">
-              <Button variant="outline" className="cyber-border w-full h-auto py-2">
-                <Youtube className="mr-2 h-4 w-4" />
-                YouTube OSINT
-              </Button>
-            </Link>
-            <Link to="/osint-tools">
-              <Button variant="outline" className="cyber-border w-full h-auto py-2">
-                <Shield className="mr-2 h-4 w-4" />
-                OSINT Tools
-              </Button>
-            </Link>
-            <Link to="/advanced-search">
-              <Button variant="outline" className="cyber-border w-full h-auto py-2 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">
-                <Zap className="mr-2 h-4 w-4" />
-                Busca Profunda
-              </Button>
-            </Link>
-          </div>
-
           <Accordion
             type="single"
             collapsible
@@ -220,10 +180,6 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
                 <span>Pesquisas salvas automaticamente</span>
               </div>
               <div className="hidden md:flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                <span>Acesse o histórico quando não houver resultados ativos</span>
-              </div>
-              <div className="flex items-center gap-1">
                 <Info className="w-3 h-3" />
                 <span>Informações públicas apenas</span>
               </div>
