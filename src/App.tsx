@@ -15,6 +15,7 @@ import ImageAnalysisPage from "./pages/ImageAnalysisPage";
 import YouTubeSearchPage from "./pages/YouTubeSearchPage";
 import OSINTTools from "./pages/OSINTTools";
 import AdvancedSearchPage from "./pages/AdvancedSearchPage";
+import TelaLogin from "./pages/TelaLogin";
 import { AuthProvider } from "./contexts/AuthContext";
 
 // Criar um cliente de consulta com configurações melhores para UX
@@ -38,6 +39,7 @@ const App: React.FC = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/login" element={<TelaLogin />} />
               <Route path="/search/:id" element={<SearchDetails />} />
               <Route path="/report" element={<ReportPage />} />
               <Route path="/report/:id" element={<ReportPage />} />
