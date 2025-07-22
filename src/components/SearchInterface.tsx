@@ -89,98 +89,111 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto border-2 border-border shadow-lg bg-gradient-to-br from-card to-background">
-      <CardContent className="p-6 space-y-6">
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center mb-3">
+    <Card className="w-full max-w-5xl mx-auto border-2 border-primary/20 shadow-xl bg-gradient-to-br from-card/90 to-background/90 backdrop-blur-sm">
+      <CardContent className="p-8 space-y-8">
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center mb-6">
             <img 
               src="/lovable-uploads/8b79dcd0-43c0-4522-bcb3-fdd451d1a3d5.png"
               alt="CavernaSPY"
-              className="h-16 w-16 mr-3"
+              className="h-20 w-20 mr-4 logo-pulse rounded-full border-2 border-primary/30"
             />
-            <h2 className="text-3xl font-bold cyber-text bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">CavernaSPY</h2>
+            <div className="text-left">
+              <h2 className="text-4xl font-bold cyber-text mb-1">CavernaSPY</h2>
+              <p className="text-lg text-muted-foreground">Centro de Investigação</p>
+            </div>
           </div>
-          <p className="text-muted-foreground">
-            Pesquise informações públicas em diversas fontes online
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Pesquise informações públicas em diversas fontes online com tecnologia avançada
           </p>
         </div>
 
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-2">
-            <div className="flex-1 relative">
-              <Input
-                className="search-input h-12 pl-10 pr-4 text-lg bg-muted/70"
-                placeholder="Digite um nome, email, telefone ou endereço..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+        <div className="space-y-8">
+          <div className="bg-muted/30 p-6 rounded-xl border border-primary/10">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Input
+                  className="search-input h-14 pl-12 pr-4 text-lg rounded-xl"
+                  placeholder="Digite um nome, email, telefone ou endereço..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-6 h-6" />
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  className="enhanced-button h-14 px-8 text-lg font-semibold rounded-xl"
+                  onClick={handleSearch}
+                  disabled={isSearching}
+                >
+                  {isSearching ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Pesquisando...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="mr-2 h-5 w-5" />
+                      Pesquisar
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  className="h-14 px-8 text-lg rounded-xl"
+                  variant="outline"
+                  onClick={handleNewSearch}
+                  disabled={isSearching}
+                >
+                  Nova Pesquisa
+                </Button>
+              </div>
             </div>
-            <Button 
-              className="h-12 px-6 bg-primary hover:bg-primary/90"
-              onClick={handleSearch}
-              disabled={isSearching}
-            >
-              {isSearching ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Pesquisando...
-                </>
-              ) : (
-                "Pesquisar"
-              )}
-            </Button>
-            <Button 
-              className="h-12 px-6 bg-secondary hover:bg-secondary/90"
-              onClick={handleNewSearch}
-              disabled={isSearching}
-            >
-              Nova Pesquisa
-            </Button>
           </div>
 
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-muted-foreground text-center">
-              Ferramentas Rápidas
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              <Link to="/report" className="block">
-                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
-                  <FileText className="h-4 w-4" />
-                  <span className="text-xs">Relatório</span>
-                </Button>
-              </Link>
-              <Link to="/google-map" className="block">
-                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
-                  <MapPin className="h-4 w-4" />
-                  <span className="text-xs">Mapa Google</span>
-                </Button>
-              </Link>
-              <Link to="/image-analysis" className="block">
-                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
-                  <Camera className="h-4 w-4" />
-                  <span className="text-xs">Análise Imagem</span>
-                </Button>
-              </Link>
-              <Link to="/youtube-search" className="block">
-                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
-                  <Youtube className="h-4 w-4" />
-                  <span className="text-xs">YouTube OSINT</span>
-                </Button>
-              </Link>
-              <Link to="/osint-tools" className="block">
-                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
-                  <Shield className="h-4 w-4" />
-                  <span className="text-xs">OSINT Tools</span>
-                </Button>
-              </Link>
-              <Link to="/advanced-search" className="block">
-                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/40 hover:bg-primary/5 transition-all">
-                  <Zap className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-medium">Busca Profunda</span>
-                </Button>
-              </Link>
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 p-6 rounded-xl border border-primary/20">
+              <h3 className="text-lg font-semibold text-center mb-6 cyber-text">
+                🚀 Ferramentas Rápidas
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <Link to="/report" className="block group">
+                  <Button variant="outline" className="cyber-border w-full h-20 flex flex-col items-center justify-center gap-2 p-3 hover:bg-primary/10 transition-all group-hover:scale-105">
+                    <FileText className="h-6 w-6 text-primary" />
+                    <span className="text-sm font-medium">Relatório</span>
+                  </Button>
+                </Link>
+                <Link to="/google-map" className="block group">
+                  <Button variant="outline" className="cyber-border w-full h-20 flex flex-col items-center justify-center gap-2 p-3 hover:bg-primary/10 transition-all group-hover:scale-105">
+                    <MapPin className="h-6 w-6 text-primary" />
+                    <span className="text-sm font-medium">Mapa Google</span>
+                  </Button>
+                </Link>
+                <Link to="/image-analysis" className="block group">
+                  <Button variant="outline" className="cyber-border w-full h-20 flex flex-col items-center justify-center gap-2 p-3 hover:bg-primary/10 transition-all group-hover:scale-105">
+                    <Camera className="h-6 w-6 text-primary" />
+                    <span className="text-sm font-medium">Análise Imagem</span>
+                  </Button>
+                </Link>
+                <Link to="/youtube-search" className="block group">
+                  <Button variant="outline" className="cyber-border w-full h-20 flex flex-col items-center justify-center gap-2 p-3 hover:bg-primary/10 transition-all group-hover:scale-105">
+                    <Youtube className="h-6 w-6 text-primary" />
+                    <span className="text-sm font-medium">YouTube OSINT</span>
+                  </Button>
+                </Link>
+                <Link to="/osint-tools" className="block group">
+                  <Button variant="outline" className="cyber-border w-full h-20 flex flex-col items-center justify-center gap-2 p-3 hover:bg-primary/10 transition-all group-hover:scale-105">
+                    <Shield className="h-6 w-6 text-primary" />
+                    <span className="text-sm font-medium">OSINT Tools</span>
+                  </Button>
+                </Link>
+                <Link to="/advanced-search" className="block group">
+                  <Button variant="outline" className="cyber-border w-full h-20 flex flex-col items-center justify-center gap-2 p-3 bg-gradient-to-br from-primary/20 to-secondary/20 border-primary/50 hover:bg-primary/30 transition-all group-hover:scale-105">
+                    <Zap className="h-6 w-6 text-primary" />
+                    <span className="text-sm font-medium">Busca Profunda</span>
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
 

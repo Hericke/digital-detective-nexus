@@ -16,9 +16,11 @@
 
     --primary: 196 80% 45%;
     --primary-foreground: 210 40% 98%;
+    --primary-glow: 196 80% 55%;
 
-    --secondary: 160 80% 40%;
+    --secondary: 280 60% 45%;
     --secondary-foreground: 210 40% 98%;
+    --secondary-glow: 280 60% 55%;
 
     --muted: 217 25% 20%;
     --muted-foreground: 215 20% 65%;
@@ -43,6 +45,15 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 220 25% 15%;
     --sidebar-ring: 196 80% 45%;
+
+    /* Enhanced gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-glow)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.1));
+    
+    /* Enhanced shadows */
+    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
+    --shadow-card: 0 4px 20px hsl(var(--primary) / 0.1);
   }
 }
 
@@ -59,43 +70,53 @@
 
 @layer components {
   .cyber-gradient {
-    @apply bg-gradient-to-br from-primary to-secondary;
+    background: var(--gradient-primary);
   }
   
   .cyber-text {
-    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary via-primary-glow to-secondary bg-clip-text text-transparent;
   }
 
   .cyber-border {
-    @apply relative border border-primary/20;
+    @apply relative border border-primary/30 backdrop-blur-sm;
+    box-shadow: var(--shadow-glow);
   }
 
   .cyber-border::after {
     content: '';
-    @apply absolute inset-0 rounded-lg pointer-events-none;
+    @apply absolute inset-0 rounded-lg pointer-events-none opacity-60;
     background: linear-gradient(45deg, 
-      rgba(var(--primary), 0.4) 0%, 
-      rgba(var(--secondary), 0.2) 50%, 
-      rgba(var(--primary), 0.4) 100%) border-box;
+      hsl(var(--primary) / 0.2) 0%, 
+      hsl(var(--secondary) / 0.1) 50%, 
+      hsl(var(--primary) / 0.2) 100%) border-box;
     mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
-    @apply opacity-50;
   }
 
   .search-input {
-    @apply bg-muted text-foreground border-0 focus-visible:ring-1 focus-visible:ring-primary/50 placeholder:text-muted-foreground/70;
+    @apply bg-muted/80 text-foreground border-0 focus-visible:ring-2 focus-visible:ring-primary/50 placeholder:text-muted-foreground/70 backdrop-blur-sm;
+    box-shadow: var(--shadow-card);
   }
   
   .result-card {
-    @apply bg-card rounded-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10;
+    @apply bg-card/90 rounded-lg overflow-hidden backdrop-blur-sm border border-primary/10;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s ease;
+  }
+
+  .result-card:hover {
+    @apply border-primary/30;
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
   }
 
   .platform-icon {
     @apply w-5 h-5 text-primary;
   }
 
-  .accordion-content {
-    @apply overflow-hidden transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down;
+  .hero-container {
+    background: var(--gradient-hero);
+    backdrop-filter: blur(20px);
   }
   
   .accordion-content[data-state='open'] {
@@ -249,16 +270,46 @@
   @apply opacity-100;
 }
 
-/* Logo animação */
-.logo-spin {
-  animation: logo-pulse 4s ease-in-out infinite;
+/* Logo animação melhorada */
+.logo-pulse {
+  animation: logo-enhanced-pulse 6s ease-in-out infinite;
 }
 
-@keyframes logo-pulse {
+@keyframes logo-enhanced-pulse {
   0%, 100% {
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 5px hsl(var(--primary) / 0.5));
+  }
+  25% {
+    transform: scale(1.02) rotate(0.5deg);
+    filter: drop-shadow(0 0 10px hsl(var(--primary) / 0.7));
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.05) rotate(0deg);
+    filter: drop-shadow(0 0 15px hsl(var(--primary) / 0.8));
   }
+  75% {
+    transform: scale(1.02) rotate(-0.5deg);
+    filter: drop-shadow(0 0 10px hsl(var(--primary) / 0.7));
+  }
+}
+
+/* Botões melhorados */
+.enhanced-button {
+  @apply relative overflow-hidden transition-all duration-300;
+  background: var(--gradient-primary);
+}
+
+.enhanced-button::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+  background: linear-gradient(135deg, hsl(var(--primary-glow)), hsl(var(--secondary-glow)));
+}
+
+.enhanced-button:hover::before {
+  @apply opacity-100;
+}
+
+.enhanced-button > * {
+  @apply relative z-10;
 }
