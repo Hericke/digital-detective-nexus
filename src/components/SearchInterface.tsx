@@ -145,12 +145,6 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
               Ferramentas Rápidas
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              <Link to="/login" className="block">
-                <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
-                  <LogIn className="h-4 w-4" />
-                  <span className="text-xs">Login</span>
-                </Button>
-              </Link>
               <Link to="/report" className="block">
                 <Button variant="outline" className="cyber-border w-full h-16 flex flex-col items-center justify-center gap-1 p-2 hover:bg-muted/50 transition-all">
                   <FileText className="h-4 w-4" />
