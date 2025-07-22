@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const deepseekApiKey = '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';
+const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
 const hunterApiKey = '3c7e7e1618c69e65f2f41cd0e7b9bc7c72218977';
 
 const corsHeaders = {
