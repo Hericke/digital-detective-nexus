@@ -33,35 +33,49 @@ export const API_ENDPOINTS = {
   ZILLOW: 'https://zillow-com1.p.rapidapi.com'
 };
 
-// Função para tratar erros comuns das APIs
+import { handleAPIError as handleError, retryWithBackoff, createRequestCache } from '../../utils/apiErrorHandler';
+
+// Cache global para requisições
+export const requestCache = createRequestCache();
+
+// Função para tratar erros comuns das APIs (mantida para compatibilidade)
 export const handleAPIError = (response: Response, source: string) => {
-  if (response.status === 403) {
-    return {
-      success: false,
-      error: `API não está disponível ou não possui assinatura. Verifique sua conta RapidAPI para: ${source}`,
-      source
-    };
-  }
-  
-  if (response.status === 429) {
-    return {
-      success: false,
-      error: `Limite de requisições excedido para: ${source}. Tente novamente mais tarde.`,
-      source
-    };
-  }
-  
-  if (response.status === 500) {
-    return {
-      success: false,
-      error: `Erro interno no servidor da API: ${source}`,
-      source
-    };
-  }
-  
+  const error = handleError(response, source);
   return {
     success: false,
-    error: `Erro ${response.status} na API: ${source}`,
-    source
+    error: error.message,
+    source: error.source
   };
+};
+
+// Função melhorada para fazer requisições com retry e cache
+export const makeAPIRequest = async (url: string, options: RequestInit, source: string, cacheKey?: string) => {
+  // Verificar cache primeiro
+  if (cacheKey) {
+    const cachedData = requestCache.get(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+  }
+  
+  try {
+    const response = await retryWithBackoff(async () => {
+      const res = await fetch(url, options);
+      if (!res.ok) {
+        throw handleError(res, source);
+      }
+      return res;
+    });
+    
+    const data = await response.json();
+    
+    // Armazenar no cache se solicitado
+    if (cacheKey) {
+      requestCache.set(cacheKey, data);
+    }
+    
+    return data;
+  } catch (error: any) {
+    throw error;
+  }
 };

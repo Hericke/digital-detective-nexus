@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import GoogleMapComponent from '@/components/GoogleMap';
+import MapWithFallback from '@/components/MapWithFallback';
 import Navbar from '@/components/Navbar';
 
 const GoogleMapPage: React.FC = () => {
@@ -19,7 +19,7 @@ const GoogleMapPage: React.FC = () => {
             </Button>
           </Link>
         </div>
-        <GoogleMapComponent profiles={[]} />
+        <MapWithFallback profiles={[]} />
       </div>
     </div>
   );

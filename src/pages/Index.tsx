@@ -13,10 +13,9 @@ const Index = () => {
   const [searchResults, setSearchResults] = useState<ProfileInfo[]>([]);
   const [searchId, setSearchId] = useState<string | undefined>(undefined);
   
-  console.log('Index: Renderizando página principal', { authLoading, searchResults: searchResults.length });
+  
   
   const handleSearchResults = (results: ProfileInfo[], newSearchId?: string) => {
-    console.log('Index: Novos resultados de pesquisa recebidos', { results: results.length, newSearchId });
     setSearchResults(results);
     if (newSearchId) {
       setSearchId(newSearchId);
@@ -34,17 +33,14 @@ const Index = () => {
   };
 
   const handleNewSearch = () => {
-    console.log('Index: Nova pesquisa iniciada');
     setSearchResults([]);
     setSearchId(undefined);
   };
 
   const handleSelectSearch = async (id: string) => {
     try {
-      console.log('Index: Selecionando pesquisa', id);
       const result = await getSearchById(id);
       if (result.error) {
-        console.error('Index: Erro ao carregar pesquisa:', result.error);
         return;
       }
       
@@ -59,7 +55,7 @@ const Index = () => {
         }
       }, 100);
     } catch (error) {
-      console.error("Index: Erro ao carregar pesquisa:", error);
+      // Erro será tratado pelo componente SearchInterface
     }
   };
 
@@ -68,9 +64,16 @@ const Index = () => {
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
         <div className="flex-1 flex justify-center items-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Carregando aplicação...</p>
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mx-auto"></div>
+            <div className="space-y-2">
+              <p className="text-muted-foreground">Carregando aplicação...</p>
+              <div className="flex justify-center">
+                <div className="w-32 h-1 bg-muted rounded-full overflow-hidden">
+                  <div className="w-full h-full bg-primary rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

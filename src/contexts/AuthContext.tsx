@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,53 +21,45 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("AuthProvider: Initializing auth state");
+    let mounted = true;
     
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.email);
+        if (!mounted) return;
+        
         setSession(session);
-        setUser(session?.user ?? null);
         setLoading(false);
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session check:", session?.user?.email);
+      if (!mounted) return;
+      
       setSession(session);
-      setUser(session?.user ?? null);
       setLoading(false);
     });
 
     return () => {
-      console.log("AuthProvider: Cleaning up subscription");
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    console.log("Signing out");
     await supabase.auth.signOut();
   };
 
-  const contextValue = {
+  const contextValue = useMemo(() => ({
     session,
-    user,
+    user: session?.user ?? null,
     loading,
     signOut
-  };
-
-  console.log("Auth context value:", { 
-    isAuthenticated: !!user, 
-    email: user?.email,
-    loading 
-  });
+  }), [session, loading]);
 
   return (
     <AuthContext.Provider value={contextValue}>
