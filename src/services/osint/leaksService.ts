@@ -1,29 +1,20 @@
-
-import { RAPIDAPI_CONFIG, API_ENDPOINTS } from './config';
+import { API_ENDPOINTS } from './config';
+import { secureApiClient } from '../api/secureApiClient';
 import { LeakData, OSINTAPIResult } from './types';
 
 export const searchDomainLeaks = async (domain: string): Promise<OSINTAPIResult<LeakData>> => {
   try {
     console.log('Buscando vazamentos para domínio:', domain);
     
-    const response = await fetch(`${API_ENDPOINTS.LEAKS}/api/v2/query/${domain}?type=domain`, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_CONFIG.key,
-        'X-RapidAPI-Host': 'leaksapi.p.rapidapi.com'
-      }
-    });
+    const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.LEAKS}/api/v2/query/${domain}?type=domain`);
 
-    if (!response.ok) {
+    if (data.error) {
       return {
         success: false,
-        error: `Erro na API: ${response.status}`,
+        error: data.error,
         source: 'LeaksAPI'
       };
     }
-
-    const data = await response.json();
-    console.log('Resposta da API LeaksAPI:', data);
 
     return {
       success: true,
@@ -48,24 +39,15 @@ export const searchEmailBreach = async (email: string): Promise<OSINTAPIResult> 
   try {
     console.log('Buscando violações para email:', email);
     
-    const response = await fetch(`${API_ENDPOINTS.EMAIL_BREACH}/rapidapi/search-email/${email}`, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_CONFIG.key,
-        'X-RapidAPI-Host': 'email-breach-search.p.rapidapi.com'
-      }
-    });
+    const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.EMAIL_BREACH}/rapidapi/search-email/${email}`);
 
-    if (!response.ok) {
+    if (data.error) {
       return {
         success: false,
-        error: `Erro na API: ${response.status}`,
+        error: data.error,
         source: 'Email Breach Search'
       };
     }
-
-    const data = await response.json();
-    console.log('Resposta da API Email Breach:', data);
 
     return {
       success: true,

@@ -1,6 +1,6 @@
 
-// Serviço para busca de e-mails usando Hunter.io API
-const HUNTER_API_KEY = '3c7e7e1618c69e65f2f41cd0e7b9bc7c72218977';
+// Serviço para busca de e-mails usando Hunter.io API via secure endpoint
+import { secureApiClient } from '../api/secureApiClient';
 const HUNTER_BASE_URL = 'https://api.hunter.io/v2';
 
 export interface EmailFinderResult {
@@ -46,15 +46,15 @@ export const findEmailByName = async (fullName: string, domain: string): Promise
     const firstName = nameParts[0];
     const lastName = nameParts[nameParts.length - 1];
     
-    const url = `${HUNTER_BASE_URL}/email-finder?domain=${domain}&first_name=${firstName}&last_name=${lastName}&api_key=${HUNTER_API_KEY}`;
-    
-    const response = await fetch(url);
-    const data = await response.json();
+    const data = await secureApiClient.hunterRequest(
+      `${HUNTER_BASE_URL}/email-finder`,
+      { domain, first_name: firstName, last_name: lastName }
+    );
     
     console.log('Resposta Hunter.io email finder:', data);
     
-    if (!response.ok || data.errors) {
-      console.error('Erro na API Hunter.io:', data.errors);
+    if (data.errors || data.error) {
+      console.error('Erro na API Hunter.io:', data.errors || data.error);
       return null;
     }
     
@@ -81,15 +81,15 @@ export const verifyEmail = async (email: string): Promise<EmailVerificationResul
   try {
     console.log('Verificando email:', email);
     
-    const url = `${HUNTER_BASE_URL}/email-verifier?email=${email}&api_key=${HUNTER_API_KEY}`;
-    
-    const response = await fetch(url);
-    const data = await response.json();
+    const data = await secureApiClient.hunterRequest(
+      `${HUNTER_BASE_URL}/email-verifier`,
+      { email }
+    );
     
     console.log('Resposta Hunter.io email verifier:', data);
     
-    if (!response.ok || data.errors) {
-      console.error('Erro na API Hunter.io:', data.errors);
+    if (data.errors || data.error) {
+      console.error('Erro na API Hunter.io:', data.errors || data.error);
       return null;
     }
     
@@ -121,15 +121,15 @@ export const searchDomain = async (domain: string): Promise<DomainSearchResult |
   try {
     console.log('Buscando domínio:', domain);
     
-    const url = `${HUNTER_BASE_URL}/domain-search?domain=${domain}&api_key=${HUNTER_API_KEY}`;
-    
-    const response = await fetch(url);
-    const data = await response.json();
+    const data = await secureApiClient.hunterRequest(
+      `${HUNTER_BASE_URL}/domain-search`,
+      { domain }
+    );
     
     console.log('Resposta Hunter.io domain search:', data);
     
-    if (!response.ok || data.errors) {
-      console.error('Erro na API Hunter.io:', data.errors);
+    if (data.errors || data.error) {
+      console.error('Erro na API Hunter.io:', data.errors || data.error);
       return null;
     }
     

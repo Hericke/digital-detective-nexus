@@ -1,36 +1,24 @@
-
-import { searchDomainLeaks, searchEmailBreach } from './leaksService';
-import { getWhatsAppProfile } from './whatsappService';
-import { enrichIP, detectPhishing, scanVulnerabilities } from './ipSecurityService';
-import { findSubdomains, scanSubdomains, checkWhois } from './domainService';
+import { API_ENDPOINTS } from './config';
+import { secureApiClient } from '../api/secureApiClient';
 import { OSINTAPIResult } from './types';
-import { RAPIDAPI_CONFIG, API_ENDPOINTS } from './config';
 
-// Serviço unificado de busca OSINT
+// Serviço unificado de busca OSINT com segurança aprimorada
 export const searchOSINTData = async (query: string): Promise<OSINTAPIResult> => {
   try {
     console.log('Iniciando busca OSINT para:', query);
     
-    const response = await fetch(`${API_ENDPOINTS.OSINT_SEARCH}/search`, {
+    const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.OSINT_SEARCH}/search`, {
       method: 'POST',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_CONFIG.key,
-        'X-RapidAPI-Host': 'osint-phone-email-names-search-everything.p.rapidapi.com',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ query })
+      body: { query }
     });
 
-    if (!response.ok) {
+    if (data.error) {
       return {
         success: false,
-        error: `Erro na API: ${response.status}`,
+        error: data.error,
         source: 'OSINT Search'
       };
     }
-
-    const data = await response.json();
-    console.log('Resposta da API OSINT Search:', data);
 
     return {
       success: true,
@@ -53,28 +41,20 @@ export const searchEmailPhone = async (email?: string, phone?: string): Promise<
   try {
     console.log('Buscando dados combinados:', { email, phone });
     
-    const params = new URLSearchParams();
-    if (email) params.append('email', email);
-    if (phone) params.append('phone', phone);
+    const params: any = {};
+    if (email) params.email = email;
+    if (phone) params.phone = phone;
     
-    const response = await fetch(`${API_ENDPOINTS.OSINT_WORK}/rapidapi/search/?${params.toString()}`, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_CONFIG.key,
-        'X-RapidAPI-Host': 'osintwork1.p.rapidapi.com'
-      }
-    });
+    const queryString = new URLSearchParams(params).toString();
+    const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.OSINT_WORK}/rapidapi/search/?${queryString}`);
 
-    if (!response.ok) {
+    if (data.error) {
       return {
         success: false,
-        error: `Erro na API: ${response.status}`,
+        error: data.error,
         source: 'OSINT Work'
       };
     }
-
-    const data = await response.json();
-    console.log('Resposta da API OSINT Work:', data);
 
     return {
       success: true,
@@ -98,24 +78,15 @@ export const searchPhoneLeak = async (phone: string): Promise<OSINTAPIResult> =>
     const cleanPhone = phone.replace(/\D/g, '');
     console.log('Buscando vazamentos de telefone:', cleanPhone);
     
-    const response = await fetch(`${API_ENDPOINTS.PHONE_LEAK}/api/search/origin?phone=${cleanPhone}`, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_CONFIG.key,
-        'X-RapidAPI-Host': 'phone-leak-search.p.rapidapi.com'
-      }
-    });
+    const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.PHONE_LEAK}/api/search/origin?phone=${cleanPhone}`);
 
-    if (!response.ok) {
+    if (data.error) {
       return {
         success: false,
-        error: `Erro na API: ${response.status}`,
+        error: data.error,
         source: 'Phone Leak Search'
       };
     }
-
-    const data = await response.json();
-    console.log('Resposta da API Phone Leak:', data);
 
     return {
       success: true,
@@ -138,26 +109,18 @@ export const checkBrokenLinks = async (url: string): Promise<OSINTAPIResult> => 
   try {
     console.log('Verificando link quebrado:', url);
     
-    const response = await fetch(`${API_ENDPOINTS.BROKEN_LINK}/brokenlink`, {
+    const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.BROKEN_LINK}/brokenlink`, {
       method: 'POST',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_CONFIG.key,
-        'X-RapidAPI-Host': 'broken-link-checker-api.p.rapidapi.com',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ url })
+      body: { url }
     });
 
-    if (!response.ok) {
+    if (data.error) {
       return {
         success: false,
-        error: `Erro na API: ${response.status}`,
+        error: data.error,
         source: 'Broken Link Checker'
       };
     }
-
-    const data = await response.json();
-    console.log('Resposta da API Broken Link:', data);
 
     return {
       success: true,
@@ -175,15 +138,8 @@ export const checkBrokenLinks = async (url: string): Promise<OSINTAPIResult> => 
   }
 };
 
-// Exportar todas as funções disponíveis
-export {
-  searchDomainLeaks,
-  searchEmailBreach,
-  getWhatsAppProfile,
-  enrichIP,
-  detectPhishing,
-  scanVulnerabilities,
-  findSubdomains,
-  scanSubdomains,
-  checkWhois
-};
+// Re-export das outras funções dos serviços seguros
+export { searchDomainLeaks, searchEmailBreach } from './leaksService';
+export { getWhatsAppProfile } from './whatsappService';
+export { enrichIP, detectPhishing, scanVulnerabilities } from './ipSecurityService';
+export { findSubdomains, scanSubdomains, checkWhois } from './domainService';

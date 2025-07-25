@@ -1,29 +1,20 @@
-
-import { RAPIDAPI_CONFIG, API_ENDPOINTS } from './config';
+import { API_ENDPOINTS } from './config';
+import { secureApiClient } from '../api/secureApiClient';
 import { SubdomainData, OSINTAPIResult } from './types';
 
 export const findSubdomains = async (domain: string): Promise<OSINTAPIResult<SubdomainData>> => {
   try {
     console.log('Buscando subdomínios para:', domain);
     
-    const response = await fetch(`${API_ENDPOINTS.SUBDOMAIN_FINDER}/v1/subdomain-finder/?domain=${domain}`, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_CONFIG.key,
-        'X-RapidAPI-Host': 'subdomain-finder3.p.rapidapi.com'
-      }
-    });
+    const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.SUBDOMAIN_FINDER}/v1/subdomain-finder/?domain=${domain}`);
 
-    if (!response.ok) {
+    if (data.error) {
       return {
         success: false,
-        error: `Erro na API: ${response.status}`,
+        error: data.error,
         source: 'Subdomain Finder'
       };
     }
-
-    const data = await response.json();
-    console.log('Resposta da API Subdomain Finder:', data);
 
     return {
       success: true,
@@ -49,24 +40,15 @@ export const scanSubdomains = async (domain: string): Promise<OSINTAPIResult> =>
   try {
     console.log('Escaneando subdomínios para:', domain);
     
-    const response = await fetch(`${API_ENDPOINTS.SUBDOMAIN_SCAN}/?domain=${domain}`, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_CONFIG.key,
-        'X-RapidAPI-Host': 'subdomain-scan1.p.rapidapi.com'
-      }
-    });
+    const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.SUBDOMAIN_SCAN}/?domain=${domain}`);
 
-    if (!response.ok) {
+    if (data.error) {
       return {
         success: false,
-        error: `Erro na API: ${response.status}`,
+        error: data.error,
         source: 'Subdomain Scanner'
       };
     }
-
-    const data = await response.json();
-    console.log('Resposta da API Subdomain Scanner:', data);
 
     return {
       success: true,
@@ -88,26 +70,18 @@ export const checkWhois = async (domain: string): Promise<OSINTAPIResult> => {
   try {
     console.log('Consultando WHOIS para:', domain);
     
-    const response = await fetch(`${API_ENDPOINTS.WHOIS}/v1/available-tlds`, {
+    const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.WHOIS}/v1/available-tlds`, {
       method: 'POST',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_CONFIG.key,
-        'X-RapidAPI-Host': 'whois-api-domain-whois-checker.p.rapidapi.com',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ domain })
+      body: { domain }
     });
 
-    if (!response.ok) {
+    if (data.error) {
       return {
         success: false,
-        error: `Erro na API: ${response.status}`,
+        error: data.error,
         source: 'WHOIS Lookup'
       };
     }
-
-    const data = await response.json();
-    console.log('Resposta da API WHOIS:', data);
 
     return {
       success: true,

@@ -1,9 +1,7 @@
+// Secure API configuration - all keys now handled via edge functions
 export const RAPIDAPI_CONFIG = {
-  key: "59142cbba6msha2cfe04e9f1fe48p1bac65jsna604cea7e65f",
-  headers: {
-    'X-RapidAPI-Key': "59142cbba6msha2cfe04e9f1fe48p1bac65jsna604cea7e65f",
-    'Content-Type': 'application/json'
-  }
+  // API keys are now securely managed via Supabase edge functions
+  useSecureEndpoint: true
 };
 
 // Apenas APIs que estão funcionando e disponíveis

@@ -1,4 +1,3 @@
-
 import { API_ENDPOINTS } from './config';
 import { secureApiClient } from '../api/secureApiClient';
 import { WhatsAppData, OSINTAPIResult } from './types';
@@ -12,14 +11,12 @@ export const getWhatsAppProfile = async (phone: string): Promise<OSINTAPIResult<
     const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.WHATSAPP_OSINT}/wspic/b64?phone=${cleanPhone}`);
 
     if (data.error) {
-      console.error('Erro na API WhatsApp:', data.error);
       return {
         success: false,
         error: data.error,
         source: 'WhatsApp OSINT'
       };
     }
-    console.log('Resposta da API WhatsApp:', data);
 
     return {
       success: true,

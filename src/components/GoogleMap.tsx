@@ -7,9 +7,8 @@ import { Input } from '@/components/ui/input';
 import { MapPin, Navigation, Loader2, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// API Keys fornecidas
-const GOOGLE_MAPS_API_KEY = "AIzaSyC_v74qHgKG_8YjKxC2ABhTWUKSkGlY-H8";
-const OPENCAGE_API_KEY = "8dd7e7fa334e4d5598ac7beb54360de2";
+// Secure API integration
+import { secureApiClient } from '@/services/api/secureApiClient';
 
 interface GoogleMapComponentProps {
   profiles: any[];
@@ -58,10 +57,10 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ profiles }) => 
   // Geocodificação usando OpenCage (alternativa gratuita ao Google)
   const geocodeAddress = async (address: string) => {
     try {
-      const response = await fetch(
-        `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address)}&key=${OPENCAGE_API_KEY}&limit=1`
+      const data = await secureApiClient.opencageRequest(
+        'https://api.opencagedata.com/geocode/v1/json',
+        { q: encodeURIComponent(address), limit: 1 }
       );
-      const data = await response.json();
       
       if (data.results && data.results.length > 0) {
         const result = data.results[0];
@@ -131,10 +130,10 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ profiles }) => 
         
         try {
           // Geocodificação reversa
-          const response = await fetch(
-            `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${OPENCAGE_API_KEY}&limit=1`
+          const data = await secureApiClient.opencageRequest(
+            'https://api.opencagedata.com/geocode/v1/json',
+            { q: `${latitude}+${longitude}`, limit: 1 }
           );
-          const data = await response.json();
           
           const address = data.results?.[0]?.formatted || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
           
@@ -230,7 +229,7 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ profiles }) => 
           </Button>
         </div>
 
-        <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+        <LoadScript googleMapsApiKey="SECURE_KEY_PLACEHOLDER">
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={location ? { lat: location.lat, lng: location.lng } : defaultCenter}
