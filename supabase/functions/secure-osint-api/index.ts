@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { service, endpoint, data } = await req.json()
+    const { service, endpoint, data, method = 'GET' } = await req.json()
     
     // Get API keys from secrets
     const rapidApiKey = Deno.env.get('RAPIDAPI_KEY')
@@ -21,90 +21,139 @@ serve(async (req) => {
     const googleMapsApiKey = Deno.env.get('GOOGLE_MAPS_API_KEY')
     const opencageApiKey = Deno.env.get('OPENCAGE_API_KEY')
     const youtubeApiKey = Deno.env.get('YOUTUBE_API_KEY')
+    const facebookApiKey = Deno.env.get('FACEBOOK_API_KEY')
 
-    if (!rapidApiKey || !hunterApiKey || !numverifyApiKey || !googleMapsApiKey || !opencageApiKey || !youtubeApiKey) {
-      return new Response(
-        JSON.stringify({ error: 'API keys not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    let response
-    let headers = {}
+    let apiUrl: string
+    let headers: Record<string, string> = {}
 
     switch (service) {
       case 'rapidapi':
+        if (!rapidApiKey) {
+          throw new Error('RapidAPI key not configured')
+        }
+        
+        apiUrl = endpoint
         headers = {
           'X-RapidAPI-Key': rapidApiKey,
-          'X-RapidAPI-Host': endpoint.split('/')[2],
+          'X-RapidAPI-Host': new URL(endpoint).hostname,
           'Content-Type': 'application/json'
         }
         break
+        
       case 'hunter':
-        // Hunter.io API
-        const hunterUrl = `${endpoint}?api_key=${hunterApiKey}&${new URLSearchParams(data).toString()}`
-        response = await fetch(hunterUrl)
-        break
-      case 'numverify':
-        // NumVerify API
-        const numverifyUrl = `${endpoint}?access_key=${numverifyApiKey}&${new URLSearchParams(data).toString()}`
-        response = await fetch(numverifyUrl)
-        break
-      case 'google':
-        if (endpoint.includes('youtube')) {
-          // YouTube API
-          const youtubeUrl = `${endpoint}?key=${youtubeApiKey}&${new URLSearchParams(data).toString()}`
-          response = await fetch(youtubeUrl)
-        } else {
-          // Google Maps API
-          const mapsUrl = `${endpoint}?key=${googleMapsApiKey}&${new URLSearchParams(data).toString()}`
-          response = await fetch(mapsUrl)
+        if (!hunterApiKey) {
+          throw new Error('Hunter.io API key not configured')
         }
+        
+        const hunterParams = new URLSearchParams({
+          ...data,
+          api_key: hunterApiKey
+        })
+        apiUrl = `${endpoint}?${hunterParams}`
         break
+        
+      case 'numverify':
+        if (!numverifyApiKey) {
+          throw new Error('NumVerify API key not configured')
+        }
+        
+        const numverifyParams = new URLSearchParams({
+          ...data,
+          access_key: numverifyApiKey
+        })
+        apiUrl = `${endpoint}?${numverifyParams}`
+        break
+        
+      case 'google':
+        if (!googleMapsApiKey) {
+          throw new Error('Google API key not configured')
+        }
+        
+        const googleParams = new URLSearchParams({
+          ...data,
+          key: googleMapsApiKey
+        })
+        apiUrl = `${endpoint}?${googleParams}`
+        break
+
+      case 'youtube':
+        if (!youtubeApiKey) {
+          throw new Error('YouTube API key not configured')
+        }
+        
+        const youtubeParams = new URLSearchParams({
+          ...data,
+          key: youtubeApiKey
+        })
+        apiUrl = `${endpoint}?${youtubeParams}`
+        break
+
+      case 'facebook':
+        if (!facebookApiKey) {
+          throw new Error('Facebook API key not configured')
+        }
+        
+        const facebookParams = new URLSearchParams({
+          ...data,
+          access_token: facebookApiKey
+        })
+        apiUrl = `${endpoint}?${facebookParams}`
+        break
+        
       case 'opencage':
-        // OpenCage API
-        const opencageUrl = `${endpoint}?key=${opencageApiKey}&${new URLSearchParams(data).toString()}`
-        response = await fetch(opencageUrl)
+        if (!opencageApiKey) {
+          throw new Error('OpenCage API key not configured')
+        }
+        
+        const opencageParams = new URLSearchParams({
+          ...data,
+          key: opencageApiKey
+        })
+        apiUrl = `${endpoint}?${opencageParams}`
         break
+        
       default:
-        return new Response(
-          JSON.stringify({ error: 'Unknown service' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        throw new Error(`Unsupported service: ${service}`)
     }
 
-    // For RapidAPI, make the request with headers
-    if (service === 'rapidapi') {
-      response = await fetch(endpoint, {
-        method: data.method || 'GET',
-        headers,
-        body: data.body ? JSON.stringify(data.body) : undefined
-      })
-    }
+    // Make the API request
+    const response = await fetch(apiUrl, {
+      method,
+      headers,
+      body: method !== 'GET' && data ? JSON.stringify(data) : undefined,
+    })
 
     if (!response.ok) {
       return new Response(
         JSON.stringify({ 
-          error: 'API request failed', 
-          status: response.status,
-          statusText: response.statusText
+          error: 'API request failed',
+          source: service,
+          retryable: response.status === 429 || response.status >= 500
         }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          status: response.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       )
     }
 
     const result = await response.json()
     
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+    
   } catch (error) {
-    console.error('API Error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        error: 'Service temporarily unavailable',
+        source: 'Secure OSINT API',
+        retryable: true
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     )
   }
 })

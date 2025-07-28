@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 interface APIRequest {
-  service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage';
+  service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage' | 'youtube' | 'facebook';
   endpoint: string;
   data?: any;
   method?: string;
@@ -67,6 +67,24 @@ class SecureAPIClient {
   async opencageRequest(endpoint: string, params: any = {}) {
     return this.makeSecureRequest({
       service: 'opencage',
+      endpoint,
+      data: params
+    });
+  }
+
+  // YouTube requests
+  async youtubeRequest(endpoint: string, params: any = {}) {
+    return this.makeSecureRequest({
+      service: 'youtube',
+      endpoint,
+      data: params
+    });
+  }
+
+  // Facebook requests
+  async facebookRequest(endpoint: string, params: any = {}) {
+    return this.makeSecureRequest({
+      service: 'facebook',
       endpoint,
       data: params
     });

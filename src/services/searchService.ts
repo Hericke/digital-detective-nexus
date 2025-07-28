@@ -1,9 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-
-// API Keys para serviços externos
-const YOUTUBE_API_KEY = "AIzaSyC_v74qHgKG_8YjKxC2ABhTWUKSkGlY-H8";
-const FACEBOOK_API_TOKEN = 'EAAKUSAxkgy8BO2KoZBrZCEPZC7iZCL1WRESAf9qHiKWtOvY8Y5YfZBZBYZA9j4JpnBH0zN7IWYzmIGHZANNjtZCDTYT0zBMEmOHlAnBz1HQShtGJLZAophKN0hbs9OTcMFdZBKU6CpBmEYC4rOYDhcf9eY4aeobZCA85a1AcZBvUYShmzRVXCxS9xSApZCjcNTVZBzWwAfVZBW6cpssER2QFU2CR0UbgcPa9ERmgT5syiYh7ANlhA5CTfWQyKk4ZD';
+import { secureApiClient } from "@/services/api/secureApiClient";
 
 // Tipo para informações de perfil
 export interface ProfileInfo {
@@ -132,7 +129,7 @@ async function saveSearchToSupabase(query: string, profiles: ProfileInfo[]): Pro
     const userId = session.data.session?.user.id;
 
     if (!userId) {
-      console.log("Usuário não autenticado, não será possível salvar a pesquisa");
+      // Usuário não autenticado, não será possível salvar a pesquisa
       return undefined;
     }
 
@@ -467,17 +464,21 @@ async function performRealSearch(searchTerm: string): Promise<ProfileInfo[]> {
   }
 }
 
-// Função para pesquisar no YouTube usando a API
+// Função para pesquisar no YouTube usando a API segura
 async function searchYouTube(query: string): Promise<ProfileInfo[]> {
   try {
     const encodedQuery = encodeURIComponent(query);
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=channel&key=${YOUTUBE_API_KEY}`;
     
-    const response = await fetch(url);
-    const data = await response.json();
+    const data = await secureApiClient.youtubeRequest(
+      'https://www.googleapis.com/youtube/v3/search',
+      {
+        part: 'snippet',
+        q: encodedQuery,
+        type: 'channel'
+      }
+    );
     
-    if (!response.ok || !data.items || data.error) {
-      console.error("Erro na API do YouTube:", data.error);
+    if (!data.items || data.error) {
       return [];
     }
 
@@ -493,24 +494,24 @@ async function searchYouTube(query: string): Promise<ProfileInfo[]> {
       verified: item.snippet.liveBroadcastContent === 'live',
     }));
   } catch (error) {
-    console.error("Erro ao buscar no YouTube:", error);
     return [];
   }
 }
 
-// Função para pesquisar no Facebook usando a API atualizada
+// Função para pesquisar no Facebook usando a API segura
 async function searchFacebook(query: string): Promise<ProfileInfo[]> {
   try {
-    console.log('Iniciando busca no Facebook para:', query);
     const encodedQuery = encodeURIComponent(query);
     
-    // Buscar páginas públicas no Facebook
-    const pagesUrl = `https://graph.facebook.com/v18.0/search?q=${encodedQuery}&type=page&fields=id,name,username,picture,link,about,category,fan_count,is_verified&access_token=${FACEBOOK_API_TOKEN}`;
-    
-    const pagesResponse = await fetch(pagesUrl);
-    const pagesData = await pagesResponse.json();
-    
-    console.log('Resposta da API do Facebook (páginas):', pagesData);
+    // Buscar páginas públicas no Facebook usando API segura
+    const pagesData = await secureApiClient.facebookRequest(
+      'https://graph.facebook.com/v18.0/search',
+      {
+        q: encodedQuery,
+        type: 'page',
+        fields: 'id,name,username,picture,link,about,category,fan_count,is_verified'
+      }
+    );
     
     const results: ProfileInfo[] = [];
     
@@ -547,8 +548,6 @@ async function searchFacebook(query: string): Promise<ProfileInfo[]> {
     return results;
     
   } catch (error) {
-    console.error("Erro detalhado ao buscar no Facebook:", error);
-    
     // Fallback para busca manual
     return [{
       name: query,
@@ -565,16 +564,17 @@ async function searchFacebook(query: string): Promise<ProfileInfo[]> {
 // Função para pesquisar no Instagram
 async function searchInstagram(query: string): Promise<ProfileInfo[]> {
   try {
-    console.log('Iniciando busca no Instagram para:', query);
     const encodedQuery = encodeURIComponent(query);
     
-    // Buscar contas de negócio no Instagram via Facebook Graph API
-    const instagramUrl = `https://graph.facebook.com/v18.0/search?q=${encodedQuery}&type=instagram_business_account&fields=id,username,name,biography,profile_picture_url,followers_count,media_count,website&access_token=${FACEBOOK_API_TOKEN}`;
-    
-    const response = await fetch(instagramUrl);
-    const data = await response.json();
-    
-    console.log('Resposta da API do Instagram:', data);
+    // Buscar contas de negócio no Instagram via Facebook Graph API segura
+    const data = await secureApiClient.facebookRequest(
+      'https://graph.facebook.com/v18.0/search',
+      {
+        q: encodedQuery,
+        type: 'instagram_business_account',
+        fields: 'id,username,name,biography,profile_picture_url,followers_count,media_count,website'
+      }
+    );
     
     const results: ProfileInfo[] = [];
     
