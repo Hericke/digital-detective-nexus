@@ -6,7 +6,7 @@ export const getWhatsAppProfile = async (phone: string): Promise<OSINTAPIResult<
   try {
     // Limpar formatação do telefone
     const cleanPhone = phone.replace(/\D/g, '');
-    console.log('Buscando perfil WhatsApp para:', cleanPhone);
+    
     
     const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.WHATSAPP_OSINT}/wspic/b64?phone=${cleanPhone}`);
 
@@ -30,7 +30,7 @@ export const getWhatsAppProfile = async (phone: string): Promise<OSINTAPIResult<
     };
 
   } catch (error) {
-    console.error('Erro ao buscar perfil WhatsApp:', error);
+    
     return {
       success: false,
       error: 'Erro ao conectar com a API do WhatsApp. Verifique sua conexão.',

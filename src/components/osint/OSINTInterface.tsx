@@ -24,6 +24,7 @@ import { verifyEmail, findEmailByName } from '@/services/osint/emailSearch';
 import { searchCNPJ, validateCNPJ } from '@/services/osint/cnpjSearch';
 import { searchTikTokProfile } from '@/services/osint/tiktokSearch';
 import { searchTwitterProfile } from '@/services/osint/twitterSearch';
+import { validatePhone as validatePhoneInput, validateEmail, validateCNPJ as validateCNPJInput, sanitizeText } from '@/utils/inputValidation';
 
 const OSINTInterface: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,10 +41,13 @@ const OSINTInterface: React.FC = () => {
   const [twitterUsername, setTwitterUsername] = useState('');
 
   const handlePhoneValidation = async () => {
-    if (!phoneNumber.trim()) {
+    const sanitizedPhone = sanitizeText(phoneNumber);
+    const validation = validatePhoneInput(sanitizedPhone);
+    
+    if (!validation.isValid) {
       toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira um número de telefone",
+        title: "Telefone inválido",
+        description: validation.error,
         variant: "destructive"
       });
       return;
@@ -53,8 +57,7 @@ const OSINTInterface: React.FC = () => {
     setResults([]);
     
     try {
-      console.log('Iniciando validação de telefone:', phoneNumber);
-      const result = await validatePhone(phoneNumber);
+      const result = await validatePhone(validation.cleaned!);
       
       if (result) {
         setResults([{ type: 'phone', data: result, source: 'NumVerify' }]);
@@ -71,7 +74,6 @@ const OSINTInterface: React.FC = () => {
         setResults([]);
       }
     } catch (error) {
-      console.error('Erro completo:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao validar o telefone. Tente novamente.",
@@ -84,10 +86,13 @@ const OSINTInterface: React.FC = () => {
   };
 
   const handleEmailVerification = async () => {
-    if (!emailAddress.trim()) {
+    const sanitizedEmail = sanitizeText(emailAddress);
+    const validation = validateEmail(sanitizedEmail);
+    
+    if (!validation.isValid) {
       toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira um endereço de email",
+        title: "Email inválido",
+        description: validation.error,
         variant: "destructive"
       });
       return;
@@ -97,7 +102,7 @@ const OSINTInterface: React.FC = () => {
     setResults([]);
     
     try {
-      console.log('Iniciando verificação de email:', emailAddress);
+      
       const result = await verifyEmail(emailAddress);
       
       if (result) {
@@ -115,7 +120,6 @@ const OSINTInterface: React.FC = () => {
         setResults([]);
       }
     } catch (error) {
-      console.error('Erro completo:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao verificar o email. Tente novamente.",
@@ -141,7 +145,7 @@ const OSINTInterface: React.FC = () => {
     setResults([]);
     
     try {
-      console.log('Iniciando busca de email:', emailName, emailDomain);
+      
       const result = await findEmailByName(emailName, emailDomain);
       
       if (result) {
@@ -158,7 +162,6 @@ const OSINTInterface: React.FC = () => {
         setResults([]);
       }
     } catch (error) {
-      console.error('Erro completo:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao buscar o email. Tente novamente.",
@@ -171,19 +174,13 @@ const OSINTInterface: React.FC = () => {
   };
 
   const handleCNPJSearch = async () => {
-    if (!cnpjNumber.trim()) {
-      toast({
-        title: "Campo obrigatório",
-        description: "Por favor, insira um CNPJ",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!validateCNPJ(cnpjNumber)) {
+    const sanitizedCNPJ = sanitizeText(cnpjNumber);
+    const validation = validateCNPJInput(sanitizedCNPJ);
+    
+    if (!validation.isValid) {
       toast({
         title: "CNPJ inválido",
-        description: "Por favor, verifique o número do CNPJ",
+        description: validation.error,
         variant: "destructive"
       });
       return;
@@ -193,8 +190,8 @@ const OSINTInterface: React.FC = () => {
     setResults([]);
     
     try {
-      console.log('Iniciando consulta CNPJ:', cnpjNumber);
-      const result = await searchCNPJ(cnpjNumber);
+      
+      const result = await searchCNPJ(validation.cleaned!);
       
       if (result) {
         setResults([{ type: 'cnpj', data: result, source: 'ReceitaWS' }]);
@@ -211,7 +208,6 @@ const OSINTInterface: React.FC = () => {
         setResults([]);
       }
     } catch (error) {
-      console.error('Erro completo:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao consultar o CNPJ. Tente novamente.",
@@ -237,7 +233,7 @@ const OSINTInterface: React.FC = () => {
     setResults([]);
     
     try {
-      console.log('Iniciando busca TikTok:', tikTokUsername);
+      
       const result = await searchTikTokProfile(tikTokUsername);
       
       if (result.success && result.data) {
@@ -255,7 +251,6 @@ const OSINTInterface: React.FC = () => {
         setResults([]);
       }
     } catch (error) {
-      console.error('Erro completo:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao buscar no TikTok. Tente novamente.",
@@ -281,7 +276,7 @@ const OSINTInterface: React.FC = () => {
     setResults([]);
     
     try {
-      console.log('Iniciando busca Twitter:', twitterUsername);
+      
       const result = await searchTwitterProfile(twitterUsername);
       
       if (result.success && result.data) {
@@ -304,7 +299,7 @@ const OSINTInterface: React.FC = () => {
         setResults([]);
       }
     } catch (error) {
-      console.error('Erro completo:', error);
+      
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao buscar no Twitter. Tente novamente.",

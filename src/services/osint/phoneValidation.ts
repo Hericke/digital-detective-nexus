@@ -18,7 +18,7 @@ export interface PhoneValidationResult {
 
 export const validatePhone = async (phoneNumber: string): Promise<PhoneValidationResult | null> => {
   try {
-    console.log('Validando telefone:', phoneNumber);
+    
     
     // Limpar o número de telefone
     const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
@@ -29,10 +29,10 @@ export const validatePhone = async (phoneNumber: string): Promise<PhoneValidatio
       format: '1'
     });
     
-    console.log('Resposta NumVerify:', data);
+    
     
     if (data.error) {
-      console.error('Erro na API NumVerify:', data.error);
+      
       return null;
     }
     
@@ -49,7 +49,7 @@ export const validatePhone = async (phoneNumber: string): Promise<PhoneValidatio
       lineType: data.line_type,
     };
   } catch (error) {
-    console.error('Erro ao validar telefone:', error);
+    
     return null;
   }
 };

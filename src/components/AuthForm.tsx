@@ -5,10 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
+import { secureAuthService } from '@/services/auth/secureAuthService';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { validateEmail, validatePassword } from '@/utils/inputValidation';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthFormProps {
   onSuccess: () => void;
@@ -17,9 +19,11 @@ interface AuthFormProps {
 const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const clearError = () => setError(null);
 
@@ -28,23 +32,36 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     setLoading(true);
     clearError();
 
+    // Client-side validation
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error!);
+      setLoading(false);
+      return;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.error!);
+      setLoading(false);
+      return;
+    }
+
     try {
-      console.log("Attempting signup with:", email);
-      const { data, error } = await supabase.auth.signUp({
+      const response = await secureAuthService.signUp({
         email,
         password,
+        confirmPassword
       });
 
-      if (error) {
-        console.error("Signup error:", error);
-        setError(error.message);
+      if (!response.success) {
+        setError(response.error!);
         toast({
           title: 'Erro no cadastro',
-          description: error.message,
+          description: response.error,
           variant: 'destructive',
         });
       } else {
-        console.log("Signup success:", data);
         toast({
           title: 'Cadastro realizado',
           description: 'Verifique seu email para confirmar o cadastro.',
@@ -52,11 +69,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         onSuccess();
       }
     } catch (error) {
-      console.error("Unexpected signup error:", error);
-      setError('Ocorreu um erro inesperado.');
+      setError('Erro interno no servidor');
       toast({
         title: 'Erro no cadastro',
-        description: 'Ocorreu um erro inesperado.',
+        description: 'Erro interno no servidor',
         variant: 'destructive',
       });
     } finally {
@@ -69,35 +85,46 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     setLoading(true);
     clearError();
 
+    // Client-side validation
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error!);
+      setLoading(false);
+      return;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.error!);
+      setLoading(false);
+      return;
+    }
+
     try {
-      console.log("Attempting login with:", email);
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const response = await secureAuthService.signIn({
         email,
-        password,
+        password
       });
 
-      if (error) {
-        console.error("Login error:", error);
-        setError(error.message);
+      if (!response.success) {
+        setError(response.error!);
         toast({
           title: 'Erro no login',
-          description: error.message,
+          description: response.error,
           variant: 'destructive',
         });
       } else {
-        console.log("Login success:", data);
         toast({
           title: 'Login realizado',
           description: 'Você foi autenticado com sucesso.',
         });
-        onSuccess();
+        navigate('/');
       }
     } catch (error) {
-      console.error("Unexpected login error:", error);
-      setError('Ocorreu um erro inesperado.');
+      setError('Erro interno no servidor');
       toast({
         title: 'Erro no login',
-        description: 'Ocorreu um erro inesperado.',
+        description: 'Erro interno no servidor',
         variant: 'destructive',
       });
     } finally {

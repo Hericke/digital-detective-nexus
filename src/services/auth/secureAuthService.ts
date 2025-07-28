@@ -58,7 +58,7 @@ class SecureAuthService {
         user: data.user,
       };
     } catch (error) {
-      console.error('Sign up error:', error);
+      
       return { success: false, error: 'Erro interno no servidor' };
     }
   }
@@ -86,7 +86,7 @@ class SecureAuthService {
         user: data.user 
       };
     } catch (error) {
-      console.error('Sign in error:', error);
+      
       return { success: false, error: 'Erro interno no servidor' };
     }
   }
@@ -102,7 +102,7 @@ class SecureAuthService {
 
       return { success: true };
     } catch (error) {
-      console.error('Sign out error:', error);
+      
       return { success: false, error: 'Erro interno no servidor' };
     }
   }
@@ -145,14 +145,14 @@ class SecureAuthService {
 
       return { success: true };
     } catch (error) {
-      console.error('Change password error:', error);
+      
       return { success: false, error: 'Erro interno no servidor' };
     }
   }
 
   // Handle authentication errors with user-friendly messages
   private handleAuthError(error: AuthError): AuthResponse {
-    console.error('Auth error:', error);
+    
 
     switch (error.message) {
       case 'Invalid login credentials':
@@ -179,7 +179,7 @@ class SecureAuthService {
       if (error) throw error;
       return user;
     } catch (error) {
-      console.error('Get current user error:', error);
+      
       return null;
     }
   }
@@ -190,7 +190,7 @@ class SecureAuthService {
       const { data: { session } } = await supabase.auth.getSession();
       return !!session;
     } catch (error) {
-      console.error('Check authentication error:', error);
+      
       return false;
     }
   }

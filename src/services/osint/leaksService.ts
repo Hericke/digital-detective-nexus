@@ -4,7 +4,7 @@ import { LeakData, OSINTAPIResult } from './types';
 
 export const searchDomainLeaks = async (domain: string): Promise<OSINTAPIResult<LeakData>> => {
   try {
-    console.log('Buscando vazamentos para domínio:', domain);
+    
     
     const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.LEAKS}/api/v2/query/${domain}?type=domain`);
 
@@ -26,7 +26,7 @@ export const searchDomainLeaks = async (domain: string): Promise<OSINTAPIResult<
     };
 
   } catch (error) {
-    console.error('Erro ao buscar vazamentos:', error);
+    
     return {
       success: false,
       error: 'Erro ao conectar com a API de vazamentos',
@@ -37,7 +37,7 @@ export const searchDomainLeaks = async (domain: string): Promise<OSINTAPIResult<
 
 export const searchEmailBreach = async (email: string): Promise<OSINTAPIResult> => {
   try {
-    console.log('Buscando violações para email:', email);
+    
     
     const data = await secureApiClient.rapidApiRequest(`${API_ENDPOINTS.EMAIL_BREACH}/rapidapi/search-email/${email}`);
 
@@ -56,7 +56,7 @@ export const searchEmailBreach = async (email: string): Promise<OSINTAPIResult> 
     };
 
   } catch (error) {
-    console.error('Erro ao buscar violações de email:', error);
+    
     return {
       success: false,
       error: 'Erro ao conectar com a API de violações',

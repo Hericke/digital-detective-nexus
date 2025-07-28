@@ -15,13 +15,13 @@ class SecureAPIClient {
       });
 
       if (error) {
-        console.error('Secure API Error:', error);
+        
         throw new Error(`API request failed: ${error.message}`);
       }
 
       return data;
     } catch (error) {
-      console.error('API Client Error:', error);
+      
       throw error;
     }
   }
