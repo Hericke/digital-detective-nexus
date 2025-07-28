@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { createRateLimiter, retryWithBackoff } from '@/utils/apiErrorHandler';
 
 interface APIRequest {
   service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage' | 'youtube' | 'facebook';
@@ -8,22 +9,36 @@ interface APIRequest {
 }
 
 class SecureAPIClient {
+  private rateLimiter = createRateLimiter(5, 60000); // 5 requests per minute
+  
   private async makeSecureRequest(request: APIRequest) {
-    try {
-      const { data, error } = await supabase.functions.invoke('secure-osint-api', {
-        body: request
-      });
-
-      if (error) {
-        
-        throw new Error(`API request failed: ${error.message}`);
-      }
-
-      return data;
-    } catch (error) {
-      
-      throw error;
+    const requestId = `${request.service}-${request.endpoint}`;
+    
+    // Check rate limit
+    if (!this.rateLimiter.canMakeRequest(requestId)) {
+      const waitTime = this.rateLimiter.getWaitTime(requestId);
+      throw new Error(`Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds before trying again.`);
     }
+
+    return retryWithBackoff(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('secure-osint-api', {
+          body: request
+        });
+
+        if (error) {
+          throw new Error(`API request failed: ${error.message}`);
+        }
+
+        return data;
+      } catch (error) {
+        // Handle 429 errors specifically
+        if (error instanceof Error && error.message.includes('429')) {
+          throw new Error('API rate limit exceeded. Please wait before making more requests.');
+        }
+        throw error;
+      }
+    }, 3, 3000); // 3 retries with 3 second base delay
   }
 
   // RapidAPI requests

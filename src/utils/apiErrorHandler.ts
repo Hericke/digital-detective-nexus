@@ -44,7 +44,7 @@ export const showAPIErrorToast = (error: APIError) => {
 export const retryWithBackoff = async <T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
-  baseDelay: number = 1000
+  baseDelay: number = 2000
 ): Promise<T> => {
   let lastError: Error;
   
@@ -54,11 +54,22 @@ export const retryWithBackoff = async <T>(
     } catch (error) {
       lastError = error as Error;
       
+      // Check if it's a 429 error and increase delay significantly
+      if (error instanceof Error && error.message.includes('429')) {
+        if (attempt === maxRetries) {
+          throw new Error('Limite de requisições excedido. Aguarde alguns minutos antes de tentar novamente.');
+        }
+        // For 429 errors, use much longer delays
+        const delay = baseDelay * Math.pow(3, attempt) + Math.random() * 5000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
       if (attempt === maxRetries) {
         throw lastError;
       }
       
-      const delay = baseDelay * Math.pow(2, attempt);
+      const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -82,10 +93,42 @@ export const createRequestCache = () => {
       return item.data;
     },
     
-    set: (key: string, data: any, ttl: number = 5 * 60 * 1000) => {
+    set: (key: string, data: any, ttl: number = 10 * 60 * 1000) => {
       cache.set(key, { data, timestamp: Date.now(), ttl });
     },
     
     clear: () => cache.clear()
+  };
+};
+
+// Rate limiting utility
+export const createRateLimiter = (maxRequests: number = 10, windowMs: number = 60000) => {
+  const requests = new Map<string, number[]>();
+  
+  return {
+    canMakeRequest: (identifier: string): boolean => {
+      const now = Date.now();
+      const userRequests = requests.get(identifier) || [];
+      
+      // Remove old requests outside the window
+      const validRequests = userRequests.filter(time => now - time < windowMs);
+      
+      if (validRequests.length >= maxRequests) {
+        return false;
+      }
+      
+      validRequests.push(now);
+      requests.set(identifier, validRequests);
+      return true;
+    },
+    
+    getWaitTime: (identifier: string): number => {
+      const userRequests = requests.get(identifier) || [];
+      if (userRequests.length === 0) return 0;
+      
+      const oldestRequest = userRequests[0];
+      const waitTime = windowMs - (Date.now() - oldestRequest);
+      return Math.max(0, waitTime);
+    }
   };
 };
