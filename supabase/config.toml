@@ -31,3 +31,6 @@ enable_signup = true
 
 [functions.ai-osint-chat]
 verify_jwt = false
+
+[functions.secure-osint-api]
+verify_jwt = false
