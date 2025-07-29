@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { createRateLimiter, retryWithBackoff } from '@/utils/apiErrorHandler';
+import { cachedRequest, performanceMonitor } from '@/utils/performanceOptimizer';
 
 interface APIRequest {
   service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage' | 'youtube' | 'facebook';
@@ -9,7 +10,7 @@ interface APIRequest {
 }
 
 class SecureAPIClient {
-  private rateLimiter = createRateLimiter(5, 60000); // 5 requests per minute
+  private rateLimiter = createRateLimiter(8, 60000); // Increased to 8 requests per minute
   
   private async makeSecureRequest(request: APIRequest) {
     const requestId = `${request.service}-${request.endpoint}`;
@@ -41,32 +42,55 @@ class SecureAPIClient {
     }, 3, 3000); // 3 retries with 3 second base delay
   }
 
-  // RapidAPI requests
+  // RapidAPI requests with caching
   async rapidApiRequest(endpoint: string, options: any = {}) {
-    return this.makeSecureRequest({
-      service: 'rapidapi',
-      endpoint,
-      data: options,
-      method: options.method || 'GET'
-    });
+    const cacheKey = `rapidapi-${endpoint}-${JSON.stringify(options)}`;
+    const stopTimer = performanceMonitor.startTimer();
+    
+    try {
+      const result = await cachedRequest(cacheKey, async () => {
+        return this.makeSecureRequest({
+          service: 'rapidapi',
+          endpoint,
+          data: options,
+          method: options.method || 'GET'
+        });
+      }, 'normal');
+      
+      const duration = stopTimer();
+      performanceMonitor.logSlowOperation(`RapidAPI: ${endpoint}`, duration);
+      
+      return result;
+    } catch (error) {
+      stopTimer();
+      throw error;
+    }
   }
 
-  // Hunter.io requests
+  // Hunter.io requests with caching
   async hunterRequest(endpoint: string, params: any = {}) {
-    return this.makeSecureRequest({
-      service: 'hunter',
-      endpoint,
-      data: params
-    });
+    const cacheKey = `hunter-${endpoint}-${JSON.stringify(params)}`;
+    
+    return cachedRequest(cacheKey, async () => {
+      return this.makeSecureRequest({
+        service: 'hunter',
+        endpoint,
+        data: params
+      });
+    }, 'frequent'); // Hunter requests are cached longer as they're more stable
   }
 
-  // NumVerify requests
+  // NumVerify requests with caching
   async numverifyRequest(endpoint: string, params: any = {}) {
-    return this.makeSecureRequest({
-      service: 'numverify',
-      endpoint,
-      data: params
-    });
+    const cacheKey = `numverify-${endpoint}-${JSON.stringify(params)}`;
+    
+    return cachedRequest(cacheKey, async () => {
+      return this.makeSecureRequest({
+        service: 'numverify',
+        endpoint,
+        data: params
+      });
+    }, 'frequent'); // Phone validation is cached longer
   }
 
   // Google APIs (Maps, YouTube)

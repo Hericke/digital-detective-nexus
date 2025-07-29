@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Loader2, Database, Info, ExternalLink, FileText, MapPin, Camera, Youtube, Shield, Zap, LogIn } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
@@ -9,6 +9,7 @@ import { platformCategories, searchByName } from '@/services/searchService';
 import type { ProfileInfo, SearchResult } from '@/services/searchService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { createSmartDebounce } from '@/utils/performanceOptimizer';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Accordion,
@@ -28,7 +29,47 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const handleSearch = async () => {
+  // Debounced search for better performance
+  const debouncedSearch = useMemo(
+    () => createSmartDebounce(async (query: string) => {
+      if (!query.trim()) return;
+      
+      setIsSearching(true);
+      try {
+        const results: SearchResult = await searchByName(query);
+        
+        if (results.error) {
+          toast({
+            title: "Erro na pesquisa",
+            description: results.error,
+            variant: "destructive"
+          });
+        } else if (results.profiles.length === 0) {
+          toast({
+            title: "Sem resultados",
+            description: "Nenhuma informação encontrada para este termo de busca.",
+          });
+        } else {
+          toast({
+            title: "Pesquisa concluída",
+            description: `Encontrados ${results.profiles.length} resultados.`,
+          });
+          onSearchResults(results.profiles, results.searchId);
+        }
+      } catch (error) {
+        toast({
+          title: "Erro na pesquisa",
+          description: "Ocorreu um erro ao processar sua consulta.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300),
+    [toast, onSearchResults]
+  );
+
+  const handleSearch = useCallback(async () => {
     if (!searchInput.trim()) {
       toast({
         title: "Campo obrigatório",
@@ -38,55 +79,25 @@ const SearchInterface: React.FC<SearchInterfaceProps> = ({ onSearchResults, onNe
       return;
     }
 
-    setIsSearching(true);
-    try {
-      const results: SearchResult = await searchByName(searchInput);
-      
-      if (results.error) {
-        toast({
-          title: "Erro na pesquisa",
-          description: results.error,
-          variant: "destructive"
-        });
-      } else if (results.profiles.length === 0) {
-        toast({
-          title: "Sem resultados",
-          description: "Nenhuma informação encontrada para este termo de busca.",
-        });
-      } else {
-        toast({
-          title: "Pesquisa concluída",
-          description: `Encontrados ${results.profiles.length} resultados.`,
-        });
-        onSearchResults(results.profiles, results.searchId);
-      }
-    } catch (error) {
-      toast({
-        title: "Erro na pesquisa",
-        description: "Ocorreu um erro ao processar sua consulta.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSearching(false);
-    }
-  };
+    debouncedSearch(searchInput);
+  }, [searchInput, debouncedSearch, toast]);
 
-  const handleNewSearch = () => {
+  const handleNewSearch = useCallback(() => {
     setSearchInput('');
     onNewSearch();
-  };
+  }, [onNewSearch]);
 
-  // Helper function to get icon component by name
-  const getIconComponent = (iconName: string) => {
+  // Memoized helper function to get icon component by name
+  const getIconComponent = useCallback((iconName: string) => {
     const formattedIconName = iconName.charAt(0).toUpperCase() + iconName.slice(1);
     const IconComponent = (LucideIcons as any)[formattedIconName] || LucideIcons.Search;
     return IconComponent;
-  };
+  }, []);
 
-  // Function to open platform URL
-  const handlePlatformClick = (url: string) => {
+  // Memoized function to open platform URL
+  const handlePlatformClick = useCallback((url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
-  };
+  }, []);
 
   return (
     <Card className="w-full max-w-5xl mx-auto border-2 border-primary/20 shadow-xl bg-gradient-to-br from-card/90 to-background/90 backdrop-blur-sm">

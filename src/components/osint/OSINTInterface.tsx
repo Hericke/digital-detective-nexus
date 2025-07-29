@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,8 @@ import { searchCNPJ, validateCNPJ } from '@/services/osint/cnpjSearch';
 import { searchTikTokProfile } from '@/services/osint/tiktokSearch';
 import { searchTwitterProfile } from '@/services/osint/twitterSearch';
 import { validatePhone as validatePhoneInput, validateEmail, validateCNPJ as validateCNPJInput, sanitizeText } from '@/utils/inputValidation';
+import { createSmartDebounce, cachedRequest, performanceMonitor } from '@/utils/performanceOptimizer';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 const OSINTInterface: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +42,7 @@ const OSINTInterface: React.FC = () => {
   const [tikTokUsername, setTikTokUsername] = useState('');
   const [twitterUsername, setTwitterUsername] = useState('');
 
-  const handlePhoneValidation = async () => {
+  const handlePhoneValidation = useCallback(async () => {
     const sanitizedPhone = sanitizeText(phoneNumber);
     const validation = validatePhoneInput(sanitizedPhone);
     
@@ -83,7 +85,7 @@ const OSINTInterface: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [phoneNumber, toast]);
 
   const handleEmailVerification = async () => {
     const sanitizedEmail = sanitizeText(emailAddress);
@@ -361,7 +363,7 @@ const OSINTInterface: React.FC = () => {
                     disabled={isLoading}
                   >
                     {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <LoadingSpinner size="sm" />
                     ) : (
                       <Search className="h-4 w-4" />
                     )}

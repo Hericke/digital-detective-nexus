@@ -44,7 +44,7 @@ export const showAPIErrorToast = (error: APIError) => {
 export const retryWithBackoff = async <T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
-  baseDelay: number = 2000
+  baseDelay: number = 1000 // Reduced from 2000ms to 1000ms for faster retries
 ): Promise<T> => {
   let lastError: Error;
   
@@ -59,8 +59,8 @@ export const retryWithBackoff = async <T>(
         if (attempt === maxRetries) {
           throw new Error('Limite de requisições excedido. Aguarde alguns minutos antes de tentar novamente.');
         }
-        // For 429 errors, use much longer delays
-        const delay = baseDelay * Math.pow(3, attempt) + Math.random() * 5000;
+        // For 429 errors, use exponential backoff but cap at 30 seconds
+        const delay = Math.min(baseDelay * Math.pow(2, attempt + 2), 30000) + Math.random() * 2000;
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
