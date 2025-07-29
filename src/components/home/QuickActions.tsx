@@ -46,25 +46,25 @@ const QuickActions: React.FC = () => {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 mb-8">
-      <h2 className="text-2xl font-semibold mb-6 text-center cyber-text">
+    <div className="w-full max-w-7xl mx-auto px-6 mb-12">
+      <h2 className="text-3xl font-bold mb-8 text-center cyber-text">
         Ferramentas Disponíveis
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
         {actions.map((action, index) => {
           const IconComponent = action.icon;
           return (
             <Link key={index} to={action.to} className="group">
               <Button 
                 variant="outline" 
-                className={`cyber-border w-full h-full min-h-[120px] flex flex-col items-center justify-center gap-3 p-4 hover:bg-muted/50 transition-all duration-300 group-hover:scale-105 ${
-                  action.highlight ? 'bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/40 shadow-lg shadow-primary/20' : ''
+                className={`cyber-border w-full h-full min-h-[140px] flex flex-col items-center justify-center gap-4 p-6 hover:bg-muted/50 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl ${
+                  action.highlight ? 'bg-gradient-to-br from-primary/15 to-secondary/15 border-primary/50 shadow-xl shadow-primary/25' : 'shadow-lg'
                 }`}
               >
-                <IconComponent className={`h-8 w-8 ${action.highlight ? 'text-primary' : ''} transition-transform group-hover:scale-110`} />
-                <div className="text-center space-y-1">
-                  <div className="font-semibold text-sm leading-tight">{action.label}</div>
-                  <div className="text-xs text-muted-foreground leading-tight px-1">
+                <IconComponent className={`h-10 w-10 ${action.highlight ? 'text-primary' : 'text-muted-foreground'} transition-all group-hover:scale-110 group-hover:text-primary`} />
+                <div className="text-center space-y-2">
+                  <div className="font-bold text-sm leading-tight">{action.label}</div>
+                  <div className="text-xs text-muted-foreground leading-relaxed px-1">
                     {action.description}
                   </div>
                 </div>

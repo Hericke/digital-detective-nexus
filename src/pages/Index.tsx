@@ -84,7 +84,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <main className="flex-1 container mx-auto px-4 py-8 space-y-12">
+      <main className="flex-1 container mx-auto px-6 py-12 space-y-16 max-w-7xl">
         <HeroSection />
         <SearchStatusInfo />
         
@@ -94,15 +94,15 @@ const Index = () => {
           onSelectSearch={handleSelectSearch}
         />
         
-        <div id="search-results">
+        <div id="search-results" className="scroll-mt-8">
           <ResultsSection searchResults={searchResults} />
         </div>
       </main>
       
-      <footer className="border-t border-border py-6 text-center text-sm text-muted-foreground bg-card">
-        <div className="container mx-auto px-4">
-          <p>CavernaSPY &copy; {new Date().getFullYear()} - Ferramenta de investigação digital</p>
-          <p className="text-xs mt-1">Desenvolvido para análise de informações públicas disponíveis na internet</p>
+      <footer className="border-t border-border/50 py-8 text-center text-sm text-muted-foreground bg-card/50 backdrop-blur-sm">
+        <div className="container mx-auto px-6 space-y-2">
+          <p className="font-medium">CavernaSPY &copy; {new Date().getFullYear()} - Ferramenta de investigação digital</p>
+          <p className="text-xs opacity-80">Desenvolvido para análise de informações públicas disponíveis na internet</p>
         </div>
       </footer>
     </div>
