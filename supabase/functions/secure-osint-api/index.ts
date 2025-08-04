@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { service, endpoint, data, method = 'GET' } = await req.json()
+    const { service, endpoint, data, method = 'GET', headers: customHeaders = {} } = await req.json()
     
     // Get API keys from secrets
     const rapidApiKey = Deno.env.get('RAPIDAPI_KEY')
@@ -32,11 +32,32 @@ serve(async (req) => {
           throw new Error('RapidAPI key not configured')
         }
         
-        apiUrl = endpoint
+        // Support both new format (host/path) and old format (full endpoint)
+        if (endpoint.includes('.p.rapidapi.com')) {
+          apiUrl = `https://${endpoint}`
+        } else {
+          apiUrl = endpoint.startsWith('http') ? endpoint : `https://${endpoint}`
+        }
+        
         headers = {
           'X-RapidAPI-Key': rapidApiKey,
-          'X-RapidAPI-Host': new URL(endpoint).hostname,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...customHeaders
+        }
+        
+        // Handle custom headers for RapidAPI services
+        if (customHeaders['x-rapidapi-host']) {
+          headers['X-RapidAPI-Host'] = customHeaders['x-rapidapi-host']
+        } else {
+          try {
+            headers['X-RapidAPI-Host'] = new URL(apiUrl).hostname
+          } catch {
+            // If URL parsing fails, try to extract hostname from endpoint
+            const hostMatch = endpoint.match(/([^\/]+\.p\.rapidapi\.com)/)
+            if (hostMatch) {
+              headers['X-RapidAPI-Host'] = hostMatch[1]
+            }
+          }
         }
         break
         
@@ -117,10 +138,23 @@ serve(async (req) => {
     }
 
     // Make the API request
+    let body: string | FormData | undefined
+    
+    if (method !== 'GET' && data) {
+      // Handle different content types
+      if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+        body = new URLSearchParams(data).toString()
+      } else if (headers['Content-Type'] === 'application/json') {
+        body = JSON.stringify(data)
+      } else {
+        body = JSON.stringify(data)
+      }
+    }
+
     const response = await fetch(apiUrl, {
       method,
       headers,
-      body: method !== 'GET' && data ? JSON.stringify(data) : undefined,
+      body,
     })
 
     if (!response.ok) {

@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import OSINTInterface from '@/components/osint/OSINTInterface';
+import AdvancedForensicsInterface from '@/components/osint/AdvancedForensicsInterface';
 import { ArrowLeft, Shield, Database, User, MessageCircle, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -106,6 +107,10 @@ const OSINTTools: React.FC = () => {
           </div>
           
           <OSINTInterface />
+          
+          <div className="mt-8">
+            <AdvancedForensicsInterface />
+          </div>
         </div>
       </div>
       

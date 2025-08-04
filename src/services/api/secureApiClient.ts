@@ -3,10 +3,11 @@ import { createRateLimiter, retryWithBackoff } from '@/utils/apiErrorHandler';
 import { cachedRequest, performanceMonitor } from '@/utils/performanceOptimizer';
 
 interface APIRequest {
-  service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage' | 'youtube' | 'facebook';
+  service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage' | 'youtube' | 'facebook' | 'virustotal' | 'truecaller' | 'pipl' | 'blockchain' | 'ethereum' | 'coinapi' | 'exifreader' | 'webdetection' | 'osint-everything';
   endpoint: string;
   data?: any;
   method?: string;
+  headers?: Record<string, string>;
 }
 
 class SecureAPIClient {
