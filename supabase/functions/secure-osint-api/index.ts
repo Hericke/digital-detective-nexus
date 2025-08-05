@@ -32,31 +32,38 @@ serve(async (req) => {
           throw new Error('RapidAPI key not configured')
         }
         
-        // Support both new format (host/path) and old format (full endpoint)
-        if (endpoint.includes('.p.rapidapi.com')) {
+        // Build the full URL for RapidAPI endpoints
+        if (endpoint.startsWith('https://')) {
+          apiUrl = endpoint
+        } else if (endpoint.includes('.p.rapidapi.com')) {
           apiUrl = `https://${endpoint}`
         } else {
-          apiUrl = endpoint.startsWith('http') ? endpoint : `https://${endpoint}`
+          // For endpoints like 'virustotaldimasv1/getDomainReport'
+          const hostFromHeaders = customHeaders['x-rapidapi-host'] || customHeaders['X-RapidAPI-Host']
+          if (hostFromHeaders) {
+            apiUrl = `https://${hostFromHeaders}/${endpoint}`
+          } else {
+            throw new Error('RapidAPI host not specified in headers')
+          }
         }
         
         headers = {
           'X-RapidAPI-Key': rapidApiKey,
-          'Content-Type': 'application/json',
+          'Content-Type': customHeaders['Content-Type'] || 'application/json',
           ...customHeaders
         }
         
-        // Handle custom headers for RapidAPI services
+        // Ensure RapidAPI host header is properly set
         if (customHeaders['x-rapidapi-host']) {
           headers['X-RapidAPI-Host'] = customHeaders['x-rapidapi-host']
+          delete headers['x-rapidapi-host'] // Remove lowercase version
+        } else if (customHeaders['X-RapidAPI-Host']) {
+          headers['X-RapidAPI-Host'] = customHeaders['X-RapidAPI-Host']
         } else {
           try {
             headers['X-RapidAPI-Host'] = new URL(apiUrl).hostname
           } catch {
-            // If URL parsing fails, try to extract hostname from endpoint
-            const hostMatch = endpoint.match(/([^\/]+\.p\.rapidapi\.com)/)
-            if (hostMatch) {
-              headers['X-RapidAPI-Host'] = hostMatch[1]
-            }
+            console.error('Failed to extract RapidAPI host from URL:', apiUrl)
           }
         }
         break
@@ -178,9 +185,10 @@ serve(async (req) => {
     })
     
   } catch (error) {
+    console.error('Secure OSINT API Error:', error)
     return new Response(
       JSON.stringify({ 
-        error: 'Service temporarily unavailable',
+        error: error.message || 'Service temporarily unavailable',
         source: 'Secure OSINT API',
         retryable: true
       }),
