@@ -14,6 +14,9 @@ serve(async (req) => {
   try {
     const { service, endpoint, data, method = 'GET', headers: customHeaders = {} } = await req.json()
     
+    // Extract headers from data if they exist (for compatibility with client code)
+    const finalCustomHeaders = { ...customHeaders, ...(data?.headers || {}) }
+    
     // Get API keys from secrets
     const rapidApiKey = Deno.env.get('RAPIDAPI_KEY')
     const hunterApiKey = Deno.env.get('HUNTER_API_KEY')
@@ -39,7 +42,7 @@ serve(async (req) => {
           apiUrl = `https://${endpoint}`
         } else {
           // For endpoints like 'virustotaldimasv1/getDomainReport'
-          const hostFromHeaders = customHeaders['x-rapidapi-host'] || customHeaders['X-RapidAPI-Host']
+          const hostFromHeaders = finalCustomHeaders['x-rapidapi-host'] || finalCustomHeaders['X-RapidAPI-Host']
           if (hostFromHeaders) {
             apiUrl = `https://${hostFromHeaders}/${endpoint}`
           } else {
@@ -49,16 +52,16 @@ serve(async (req) => {
         
         headers = {
           'X-RapidAPI-Key': rapidApiKey,
-          'Content-Type': customHeaders['Content-Type'] || 'application/json',
-          ...customHeaders
+          'Content-Type': finalCustomHeaders['Content-Type'] || 'application/json',
+          ...finalCustomHeaders
         }
         
         // Ensure RapidAPI host header is properly set
-        if (customHeaders['x-rapidapi-host']) {
-          headers['X-RapidAPI-Host'] = customHeaders['x-rapidapi-host']
+        if (finalCustomHeaders['x-rapidapi-host']) {
+          headers['X-RapidAPI-Host'] = finalCustomHeaders['x-rapidapi-host']
           delete headers['x-rapidapi-host'] // Remove lowercase version
-        } else if (customHeaders['X-RapidAPI-Host']) {
-          headers['X-RapidAPI-Host'] = customHeaders['X-RapidAPI-Host']
+        } else if (finalCustomHeaders['X-RapidAPI-Host']) {
+          headers['X-RapidAPI-Host'] = finalCustomHeaders['X-RapidAPI-Host']
         } else {
           try {
             headers['X-RapidAPI-Host'] = new URL(apiUrl).hostname
@@ -148,13 +151,16 @@ serve(async (req) => {
     let body: string | FormData | undefined
     
     if (method !== 'GET' && data) {
+      // Filter out headers from data to get actual payload
+      const { headers: dataHeaders, ...payload } = data
+      
       // Handle different content types
       if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
-        body = new URLSearchParams(data).toString()
+        body = new URLSearchParams(payload).toString()
       } else if (headers['Content-Type'] === 'application/json') {
-        body = JSON.stringify(data)
+        body = JSON.stringify(payload)
       } else {
-        body = JSON.stringify(data)
+        body = JSON.stringify(payload)
       }
     }
 
