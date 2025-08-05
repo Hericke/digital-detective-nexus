@@ -1,6 +1,6 @@
 
-// Serviço para consulta de CNPJ usando ReceitaWS API
-const RECEITA_WS_BASE_URL = 'https://www.receitaws.com.br/v1';
+// Serviço para consulta de CNPJ usando RapidAPI
+import { secureApiClient } from '../api/secureApiClient';
 
 export interface CNPJResult {
   cnpj: string;
@@ -63,15 +63,19 @@ export const searchCNPJ = async (cnpj: string): Promise<CNPJResult | null> => {
     // Limpar o CNPJ de caracteres especiais
     const cleanCNPJ = cnpj.replace(/[\.\-\/]/g, '');
     
-    const url = `${RECEITA_WS_BASE_URL}/cnpj/${cleanCNPJ}`;
+    const data = await secureApiClient.rapidApiRequest(`office/${cleanCNPJ}`, {
+      headers: {
+        'x-rapidapi-host': 'consulta-cnpj-gratis.p.rapidapi.com'
+      },
+      params: {
+        simples: false
+      }
+    });
     
-    const response = await fetch(url);
-    const data = await response.json();
+    console.log('Resposta CNPJ API:', data);
     
-    console.log('Resposta ReceitaWS:', data);
-    
-    if (!response.ok || data.status === 'ERROR') {
-      console.error('Erro na API ReceitaWS:', data.message);
+    if (data.error || !data.cnpj) {
+      console.error('Erro na API CNPJ:', data.error);
       return null;
     }
     
