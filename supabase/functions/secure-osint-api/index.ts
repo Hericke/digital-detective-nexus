@@ -25,6 +25,8 @@ serve(async (req) => {
     const opencageApiKey = Deno.env.get('OPENCAGE_API_KEY')
     const youtubeApiKey = Deno.env.get('YOUTUBE_API_KEY')
     const facebookApiKey = Deno.env.get('FACEBOOK_API_KEY')
+    const censysApiKey = Deno.env.get('CENSYS_API_KEY')
+    const censysOrgId = Deno.env.get('CENSYS_ORG_ID')
 
     let apiUrl: string
     let headers: Record<string, string> = {}
@@ -139,6 +141,23 @@ serve(async (req) => {
           key: opencageApiKey
         })
         apiUrl = `${endpoint}?${opencageParams}`
+        break
+
+      case 'censys':
+        if (!censysApiKey) {
+          throw new Error('Censys API key not configured')
+        }
+        if (!censysOrgId) {
+          throw new Error('Censys Organization ID not configured')
+        }
+        
+        apiUrl = endpoint
+        headers = {
+          'Authorization': `Bearer ${censysApiKey}`,
+          'X-Organization-ID': censysOrgId,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
         break
         
       default:

@@ -3,7 +3,7 @@ import { createRateLimiter, retryWithBackoff } from '@/utils/apiErrorHandler';
 import { cachedRequest, performanceMonitor } from '@/utils/performanceOptimizer';
 
 interface APIRequest {
-  service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage' | 'youtube' | 'facebook' | 'virustotal' | 'truecaller' | 'pipl' | 'blockchain' | 'ethereum' | 'coinapi' | 'exifreader' | 'webdetection' | 'osint-everything';
+  service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage' | 'youtube' | 'facebook' | 'virustotal' | 'truecaller' | 'pipl' | 'blockchain' | 'ethereum' | 'coinapi' | 'exifreader' | 'webdetection' | 'osint-everything' | 'censys';
   endpoint: string;
   data?: any;
   method?: string;
@@ -127,6 +127,16 @@ class SecureAPIClient {
       service: 'facebook',
       endpoint,
       data: params
+    });
+  }
+
+  // Censys requests
+  async censysRequest(endpoint: string, options: any = {}) {
+    return this.makeSecureRequest({
+      service: 'censys',
+      endpoint,
+      data: options.body || {},
+      method: options.method || 'GET'
     });
   }
 }
