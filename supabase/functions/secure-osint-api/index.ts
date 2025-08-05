@@ -36,18 +36,16 @@ serve(async (req) => {
         }
         
         // Build the full URL for RapidAPI endpoints
+        const hostFromHeaders = finalCustomHeaders['x-rapidapi-host'] || finalCustomHeaders['X-RapidAPI-Host']
+        
         if (endpoint.startsWith('https://')) {
           apiUrl = endpoint
-        } else if (endpoint.includes('.p.rapidapi.com')) {
-          apiUrl = `https://${endpoint}`
+        } else if (hostFromHeaders) {
+          // Remove leading slash if present
+          const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
+          apiUrl = `https://${hostFromHeaders}/${cleanEndpoint}`
         } else {
-          // For endpoints like 'virustotaldimasv1/getDomainReport'
-          const hostFromHeaders = finalCustomHeaders['x-rapidapi-host'] || finalCustomHeaders['X-RapidAPI-Host']
-          if (hostFromHeaders) {
-            apiUrl = `https://${hostFromHeaders}/${endpoint}`
-          } else {
-            throw new Error('RapidAPI host not specified in headers')
-          }
+          throw new Error('RapidAPI host not specified in headers')
         }
         
         headers = {
