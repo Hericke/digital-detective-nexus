@@ -3,29 +3,32 @@ import { secureApiClient } from '@/services/api/secureApiClient';
 export interface NewsSearchParams {
   text: string;
   language?: string;
-  earliest_publish_date?: string;
-  latest_publish_date?: string;
+  'earliest-publish-date'?: string;
+  'latest-publish-date'?: string;
   number?: number;
   offset?: number;
   sort?: string;
-  sort_direction?: string;
+  'sort-direction'?: string;
 }
 
 export interface NewsArticle {
-  id: string;
+  id: number;
   title: string;
   text: string;
   summary: string;
   url: string;
   image?: string;
-  author?: string;
+  video?: string;
+  authors?: string[];
   publish_date: string;
+  category?: string;
   language: string;
   source_country: string;
+  sentiment?: number;
 }
 
 export interface NewsSearchResponse {
-  articles: NewsArticle[];
+  news: NewsArticle[];
   available: number;
   number: number;
   offset: number;
@@ -57,14 +60,14 @@ class NewsService {
       queryParams.append('text', params.text);
       
       if (params.language) queryParams.append('language', params.language);
-      if (params.earliest_publish_date) queryParams.append('earliest-publish-date', params.earliest_publish_date);
-      if (params.latest_publish_date) queryParams.append('latest-publish-date', params.latest_publish_date);
+      if (params['earliest-publish-date']) queryParams.append('earliest-publish-date', params['earliest-publish-date']);
+      if (params['latest-publish-date']) queryParams.append('latest-publish-date', params['latest-publish-date']);
       if (params.number) queryParams.append('number', params.number.toString());
       if (params.offset) queryParams.append('offset', params.offset.toString());
       if (params.sort) queryParams.append('sort', params.sort);
-      if (params.sort_direction) queryParams.append('sort-direction', params.sort_direction);
+      if (params['sort-direction']) queryParams.append('sort-direction', params['sort-direction']);
 
-      const response = await this.apiClient.worldNewsRequest(`search-news?${queryParams.toString()}`);
+      const response = await this.apiClient.apiLeagueRequest(`search-news?${queryParams.toString()}`);
       return response;
     } catch (error) {
       console.error('Erro ao pesquisar notícias:', error);
@@ -78,7 +81,7 @@ class NewsService {
       const queryParams = new URLSearchParams();
       queryParams.append('url', url);
 
-      const response = await this.apiClient.worldNewsRequest(`extract-news?${queryParams.toString()}`);
+      const response = await this.apiClient.apiLeagueRequest(`extract-news?${queryParams.toString()}`);
       return response;
     } catch (error) {
       console.error('Erro ao extrair notícia:', error);
@@ -92,7 +95,7 @@ class NewsService {
       const queryParams = new URLSearchParams();
       queryParams.append('url', url);
 
-      const response = await this.apiClient.worldNewsRequest(`extract-news-links?${queryParams.toString()}`);
+      const response = await this.apiClient.apiLeagueRequest(`extract-news-links?${queryParams.toString()}`);
       return response;
     } catch (error) {
       console.error('Erro ao extrair links de notícias:', error);
@@ -108,9 +111,9 @@ class NewsService {
     return this.searchNews({
       text: query,
       language,
-      earliest_publish_date: lastWeek.toISOString().split('T')[0],
+      'earliest-publish-date': lastWeek.toISOString().split('T')[0],
       sort: 'publish-time',
-      sort_direction: 'desc',
+      'sort-direction': 'desc',
       number: 10
     });
   }
@@ -133,9 +136,9 @@ class NewsService {
       for (const keyword of keywords) {
         trends[keyword] = await this.searchNews({
           text: keyword,
-          earliest_publish_date: startDate.toISOString().split('T')[0],
+          'earliest-publish-date': startDate.toISOString().split('T')[0],
           sort: 'publish-time',
-          sort_direction: 'desc',
+          'sort-direction': 'desc',
           number: 5
         });
       }

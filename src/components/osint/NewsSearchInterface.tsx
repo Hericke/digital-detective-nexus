@@ -61,7 +61,7 @@ export const NewsSearchInterface: React.FC = () => {
 
       const response = await newsService.searchNews(params);
       setSearchResults(response);
-      toast.success(`Encontradas ${response.articles.length} notícias`);
+      toast.success(`Encontradas ${response.news?.length || 0} notícias`);
     } catch (error) {
       console.error('Erro na pesquisa:', error);
       toast.error('Erro ao pesquisar notícias');
@@ -134,7 +134,7 @@ export const NewsSearchInterface: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
             <Globe className="h-5 w-5" />
-            Pesquisa de Notícias - WorldNewsAPI
+            Pesquisa de Notícias - API League
           </CardTitle>
           <CardDescription>
             Busque, extraia e analise notícias de fontes globais em tempo real
@@ -240,14 +240,14 @@ export const NewsSearchInterface: React.FC = () => {
               {searchResults && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Resultados ({searchResults.articles.length})</h3>
+                    <h3 className="text-lg font-semibold">Resultados ({searchResults.news?.length || 0})</h3>
                     <Badge variant="secondary">
                       {searchResults.available} disponíveis
                     </Badge>
                   </div>
                   
                   <div className="grid gap-4 max-h-96 overflow-y-auto">
-                    {searchResults.articles.map((article, index) => (
+                    {searchResults.news?.map((article, index) => (
                       <Card key={index} className="border-l-4 border-l-blue-500">
                         <CardContent className="pt-4">
                           <div className="space-y-2">
@@ -265,10 +265,10 @@ export const NewsSearchInterface: React.FC = () => {
                                 <Clock className="h-3 w-3" />
                                 {new Date(article.publish_date).toLocaleDateString('pt-BR')}
                               </div>
-                              {article.author && (
+                              {article.authors && article.authors.length > 0 && (
                                 <div className="flex items-center gap-1">
                                   <User className="h-3 w-3" />
-                                  {article.author}
+                                  {article.authors[0]}
                                 </div>
                               )}
                             </div>
@@ -426,13 +426,13 @@ export const NewsSearchInterface: React.FC = () => {
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-base">{keyword}</CardTitle>
                             <Badge variant="secondary">
-                              {data.articles.length} artigos
+                              {data.news?.length || 0} artigos
                             </Badge>
                           </div>
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-2">
-                            {data.articles.slice(0, 3).map((article, index) => (
+                            {data.news?.slice(0, 3).map((article, index) => (
                               <div key={index} className="border-l-2 border-l-muted pl-3">
                                 <p className="text-sm font-medium line-clamp-1">{article.title}</p>
                                 <p className="text-xs text-muted-foreground">
