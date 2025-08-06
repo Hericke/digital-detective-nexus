@@ -162,12 +162,19 @@ serve(async (req) => {
         break
 
       case 'apileague':
+        console.log('API League key present:', !!apiLeagueKey)
         if (!apiLeagueKey) {
           throw new Error('API League key not configured')
         }
         
-        const apiLeagueParams = new URLSearchParams(data)
-        apiUrl = `https://api.apileague.com/${endpoint}?${apiLeagueParams}`
+        // For GET requests, add params to URL
+        if (method === 'GET' && data && Object.keys(data).length > 0) {
+          const apiLeagueParams = new URLSearchParams(data)
+          apiUrl = `https://api.apileague.com/${endpoint}?${apiLeagueParams}`
+        } else {
+          apiUrl = `https://api.apileague.com/${endpoint}`
+        }
+        
         headers = {
           'x-api-key': apiLeagueKey,
           'Content-Type': 'application/json'
