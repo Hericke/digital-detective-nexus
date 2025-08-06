@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OSINTInterface from '@/components/osint/OSINTInterface';
 import AdvancedForensicsInterface from '@/components/osint/AdvancedForensicsInterface';
 import { CensysAnalysisCard } from '@/components/osint/CensysAnalysisCard';
+import { NewsSearchInterface } from '@/components/osint/NewsSearchInterface';
 
 const OSINTTools: React.FC = () => {
   return (
@@ -38,7 +39,7 @@ const OSINTTools: React.FC = () => {
           </div>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsList className="grid w-full grid-cols-4 mb-8">
               <TabsTrigger value="basic" className="flex items-center gap-2">
                 <Search className="h-4 w-4" />
                 Ferramentas Básicas
@@ -50,6 +51,10 @@ const OSINTTools: React.FC = () => {
               <TabsTrigger value="infrastructure" className="flex items-center gap-2">
                 <Eye className="h-4 w-4" />
                 Infraestrutura
+              </TabsTrigger>
+              <TabsTrigger value="news" className="flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                Notícias
               </TabsTrigger>
             </TabsList>
 
@@ -209,6 +214,54 @@ const OSINTTools: React.FC = () => {
               </div>
               
               <CensysAnalysisCard />
+            </TabsContent>
+
+            <TabsContent value="news" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card className="border-teal-200 bg-teal-50/50 dark:bg-teal-950/20 hover:shadow-md transition-all">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Search className="h-4 w-4 text-teal-600" />
+                      Busca Global
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <p className="text-xs text-muted-foreground">
+                      Pesquisa em milhares de fontes
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 hover:shadow-md transition-all">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Globe className="h-4 w-4 text-amber-600" />
+                      Extração
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <p className="text-xs text-muted-foreground">
+                      Conteúdo completo de URLs
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-rose-200 bg-rose-50/50 dark:bg-rose-950/20 hover:shadow-md transition-all">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Globe className="h-4 w-4 text-rose-600" />
+                      Tendências
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <p className="text-xs text-muted-foreground">
+                      Análise de padrões e tópicos
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <NewsSearchInterface />
             </TabsContent>
           </Tabs>
         </div>

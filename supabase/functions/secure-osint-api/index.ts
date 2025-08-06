@@ -27,6 +27,7 @@ serve(async (req) => {
     const facebookApiKey = Deno.env.get('FACEBOOK_API_KEY')
     const censysApiKey = Deno.env.get('CENSYS_API_KEY')
     const censysOrgId = Deno.env.get('CENSYS_ORG_ID')
+    const worldNewsApiKey = Deno.env.get('WORLDNEWS_API_KEY')
 
     let apiUrl: string
     let headers: Record<string, string> = {}
@@ -157,6 +158,19 @@ serve(async (req) => {
           'X-Organization-ID': censysOrgId,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
+        }
+        break
+
+      case 'worldnews':
+        if (!worldNewsApiKey) {
+          throw new Error('WorldNews API key not configured')
+        }
+        
+        const worldNewsParams = new URLSearchParams(data)
+        apiUrl = `https://api.worldnewsapi.com/${endpoint}?${worldNewsParams}`
+        headers = {
+          'x-api-key': worldNewsApiKey,
+          'Content-Type': 'application/json'
         }
         break
         
