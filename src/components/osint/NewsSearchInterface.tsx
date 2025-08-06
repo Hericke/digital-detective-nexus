@@ -231,10 +231,24 @@ export const NewsSearchInterface: React.FC = () => {
                   </PopoverContent>
                 </Popover>
 
-                <Button onClick={handleSearch} disabled={isLoading} className="w-full">
-                  {isLoading ? <LoadingSpinner /> : <Search className="h-4 w-4 mr-2" />}
-                  Pesquisar
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleSearch} disabled={isLoading} className="flex-1">
+                    {isLoading ? <LoadingSpinner /> : <Search className="h-4 w-4 mr-2" />}
+                    Pesquisar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStartDate(undefined);
+                      setEndDate(undefined);
+                      setSearchResults(null);
+                    }}
+                    className="px-4"
+                  >
+                    Nova Pesquisa
+                  </Button>
+                </div>
               </div>
 
               {searchResults && (
@@ -300,10 +314,22 @@ export const NewsSearchInterface: React.FC = () => {
                     onKeyPress={(e) => e.key === 'Enter' && handleExtract()}
                   />
                 </div>
-                <Button onClick={handleExtract} disabled={isLoading} className="w-full">
-                  {isLoading ? <LoadingSpinner /> : <FileText className="h-4 w-4 mr-2" />}
-                  Extrair
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleExtract} disabled={isLoading} className="flex-1">
+                    {isLoading ? <LoadingSpinner /> : <FileText className="h-4 w-4 mr-2" />}
+                    Extrair
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setExtractUrl('');
+                      setExtractedNews(null);
+                    }}
+                    className="px-4"
+                  >
+                    Limpar
+                  </Button>
+                </div>
               </div>
 
               {extractedNews && (
@@ -364,10 +390,22 @@ export const NewsSearchInterface: React.FC = () => {
                     onKeyPress={(e) => e.key === 'Enter' && handleExtractLinks()}
                   />
                 </div>
-                <Button onClick={handleExtractLinks} disabled={isLoading} className="w-full">
-                  {isLoading ? <LoadingSpinner /> : <LinkIcon className="h-4 w-4 mr-2" />}
-                  Extrair Links
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleExtractLinks} disabled={isLoading} className="flex-1">
+                    {isLoading ? <LoadingSpinner /> : <LinkIcon className="h-4 w-4 mr-2" />}
+                    Extrair Links
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setLinksUrl('');
+                      setNewsLinks(null);
+                    }}
+                    className="px-4"
+                  >
+                    Limpar
+                  </Button>
+                </div>
               </div>
 
               {newsLinks && (
