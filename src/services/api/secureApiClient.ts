@@ -3,7 +3,7 @@ import { createRateLimiter, retryWithBackoff } from '@/utils/apiErrorHandler';
 import { cachedRequest, performanceMonitor } from '@/utils/performanceOptimizer';
 
 interface APIRequest {
-  service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage' | 'youtube' | 'facebook' | 'virustotal' | 'truecaller' | 'pipl' | 'blockchain' | 'ethereum' | 'coinapi' | 'exifreader' | 'webdetection' | 'osint-everything' | 'censys' | 'apileague';
+  service: 'rapidapi' | 'hunter' | 'numverify' | 'google' | 'opencage' | 'youtube' | 'facebook' | 'virustotal' | 'truecaller' | 'pipl' | 'blockchain' | 'ethereum' | 'coinapi' | 'exifreader' | 'webdetection' | 'osint-everything' | 'censys' | 'worldnews';
   endpoint: string;
   data?: any;
   method?: string;
@@ -140,13 +140,13 @@ class SecureAPIClient {
     });
   }
 
-  // API League requests
-  async apiLeagueRequest(endpoint: string, params: any = {}) {
+  // WorldNews API requests
+  async worldNewsRequest(endpoint: string, params: any = {}, method: string = 'GET') {
     return this.makeSecureRequest({
-      service: 'apileague',
+      service: 'worldnews',
       endpoint,
       data: params,
-      method: 'GET'
+      method
     });
   }
 }

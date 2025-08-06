@@ -134,7 +134,7 @@ export const NewsSearchInterface: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
             <Globe className="h-5 w-5" />
-            Pesquisa de Notícias - API League
+            Pesquisa de Notícias - WorldNews API
           </CardTitle>
           <CardDescription>
             Busque, extraia e analise notícias de fontes globais em tempo real
@@ -316,19 +316,21 @@ export const NewsSearchInterface: React.FC = () => {
                           <Clock className="h-4 w-4" />
                           {new Date(extractedNews.publish_date).toLocaleDateString('pt-BR')}
                         </div>
-                        {extractedNews.author && (
+                        {extractedNews.authors && extractedNews.authors.length > 0 && (
                           <div className="flex items-center gap-1">
                             <User className="h-4 w-4" />
-                            {extractedNews.author}
+                            {extractedNews.authors.join(', ')}
                           </div>
                         )}
                         <Badge variant="outline">{extractedNews.language}</Badge>
                       </div>
                       <div className="space-y-3">
-                        <div>
-                          <h4 className="font-medium text-sm mb-2">Resumo:</h4>
-                          <p className="text-sm text-muted-foreground">{extractedNews.summary}</p>
-                        </div>
+                        {extractedNews.summary && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Resumo:</h4>
+                            <p className="text-sm text-muted-foreground">{extractedNews.summary}</p>
+                          </div>
+                        )}
                         <div>
                           <h4 className="font-medium text-sm mb-2">Conteúdo Completo:</h4>
                           <Textarea

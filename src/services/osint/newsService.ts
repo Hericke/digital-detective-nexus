@@ -1,14 +1,17 @@
 import { secureApiClient } from '@/services/api/secureApiClient';
 
+// WorldNews API interfaces
 export interface NewsSearchParams {
   text: string;
   language?: string;
   'earliest-publish-date'?: string;
   'latest-publish-date'?: string;
+  'min-sentiment'?: number;
+  'max-sentiment'?: number;
+  'source-countries'?: string;
+  authors?: string;
   number?: number;
   offset?: number;
-  sort?: string;
-  'sort-direction'?: string;
 }
 
 export interface NewsArticle {
@@ -19,91 +22,81 @@ export interface NewsArticle {
   url: string;
   image?: string;
   video?: string;
-  authors?: string[];
   publish_date: string;
-  category?: string;
+  authors: string[];
+  category: string;
   language: string;
   source_country: string;
-  sentiment?: number;
+  sentiment: number;
 }
 
 export interface NewsSearchResponse {
-  news: NewsArticle[];
-  available: number;
-  number: number;
   offset: number;
+  number: number;
+  available: number;
+  news: NewsArticle[];
 }
 
 export interface ExtractedNews {
-  id: string;
   title: string;
   text: string;
-  summary: string;
+  summary?: string;
   url: string;
   image?: string;
-  author?: string;
   publish_date: string;
+  authors: string[];
   language: string;
+  source_country: string;
 }
 
 export interface NewsLinks {
   news_links: string[];
 }
 
-class NewsService {
-  private apiClient = secureApiClient;
-
-  // Pesquisar notícias
+export class NewsService {
   async searchNews(params: NewsSearchParams): Promise<NewsSearchResponse> {
     try {
-      const queryParams = new URLSearchParams();
-      queryParams.append('text', params.text);
-      
-      if (params.language) queryParams.append('language', params.language);
-      if (params['earliest-publish-date']) queryParams.append('earliest-publish-date', params['earliest-publish-date']);
-      if (params['latest-publish-date']) queryParams.append('latest-publish-date', params['latest-publish-date']);
-      if (params.number) queryParams.append('number', params.number.toString());
-      if (params.offset) queryParams.append('offset', params.offset.toString());
-      if (params.sort) queryParams.append('sort', params.sort);
-      if (params['sort-direction']) queryParams.append('sort-direction', params['sort-direction']);
+      const queryParams = {
+        text: params.text,
+        language: params.language || 'pt',
+        number: params.number || 20,
+        offset: params.offset || 0,
+        ...(params['earliest-publish-date'] && { 'earliest-publish-date': params['earliest-publish-date'] }),
+        ...(params['latest-publish-date'] && { 'latest-publish-date': params['latest-publish-date'] }),
+        ...(params['min-sentiment'] && { 'min-sentiment': params['min-sentiment'] }),
+        ...(params['max-sentiment'] && { 'max-sentiment': params['max-sentiment'] }),
+        ...(params['source-countries'] && { 'source-countries': params['source-countries'] }),
+        ...(params.authors && { authors: params.authors })
+      };
 
-      const response = await this.apiClient.apiLeagueRequest(`search-news?${queryParams.toString()}`);
-      return response;
+      const response = await secureApiClient.worldNewsRequest('search-news', queryParams);
+      return response as NewsSearchResponse;
     } catch (error) {
       console.error('Erro ao pesquisar notícias:', error);
       throw error;
     }
   }
 
-  // Extrair conteúdo de uma notícia específica
   async extractNews(url: string): Promise<ExtractedNews> {
     try {
-      const queryParams = new URLSearchParams();
-      queryParams.append('url', url);
-
-      const response = await this.apiClient.apiLeagueRequest(`extract-news?${queryParams.toString()}`);
-      return response;
+      const response = await secureApiClient.worldNewsRequest('extract-news', { url });
+      return response as ExtractedNews;
     } catch (error) {
       console.error('Erro ao extrair notícia:', error);
       throw error;
     }
   }
 
-  // Extrair links de notícias de um site
   async extractNewsLinks(url: string): Promise<NewsLinks> {
     try {
-      const queryParams = new URLSearchParams();
-      queryParams.append('url', url);
-
-      const response = await this.apiClient.apiLeagueRequest(`extract-news-links?${queryParams.toString()}`);
-      return response;
+      const response = await secureApiClient.worldNewsRequest('extract-news-links', { url });
+      return response as NewsLinks;
     } catch (error) {
       console.error('Erro ao extrair links de notícias:', error);
       throw error;
     }
   }
 
-  // Busca inteligente de notícias com filtros predefinidos
   async searchBreakingNews(query: string, language: string = 'pt'): Promise<NewsSearchResponse> {
     const today = new Date();
     const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -112,13 +105,10 @@ class NewsService {
       text: query,
       language,
       'earliest-publish-date': lastWeek.toISOString().split('T')[0],
-      sort: 'publish-time',
-      'sort-direction': 'desc',
       number: 10
     });
   }
 
-  // Análise de tendências por palavra-chave
   async analyzeNewsTrends(keywords: string[], timeframe: 'today' | 'week' | 'month' = 'week'): Promise<Record<string, NewsSearchResponse>> {
     const trends: Record<string, NewsSearchResponse> = {};
     
@@ -137,8 +127,6 @@ class NewsService {
         trends[keyword] = await this.searchNews({
           text: keyword,
           'earliest-publish-date': startDate.toISOString().split('T')[0],
-          sort: 'publish-time',
-          'sort-direction': 'desc',
           number: 5
         });
       }
